@@ -1,0 +1,438 @@
+name: Build
+on:
+  push:
+    branches: [ main ]
+  watch:
+    types: [started]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Release"
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    name: Build Kernel by ${{ github.actor }}
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_HARDLINK: "true"
+    steps:
+    - name: Check out
+      uses: actions/checkout@v3
+
+    - name: Read Building Configuration
+      run: |
+        CONFIG_ENV=$(cat config.env.en-us.simple | grep -w "CONFIG_ENV" | head -n 1 | cut -d "=" -f 2)
+        echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "KERNEL_SOURCE_BRANCH=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "KERNEL_CONFIG=$(cat $CONFIG_ENV | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "KERNEL_IMAGE_NAME=$(cat $CONFIG_ENV | grep -w "KERNEL_IMAGE_NAME" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ARCH=$(cat $CONFIG_ENV | grep -w "ARCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ENABLE_CLANG=$(cat $CONFIG_ENV | grep -w "ENABLE_CLANG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "USE_AOSP_CLANG=$(cat $CONFIG_ENV | grep -w "USE_AOSP_CLANG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "AOSP_CLANG_BRANCH=$(cat $CONFIG_ENV | grep -w "AOSP_CLANG_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "AOSP_CLANG_VERSION=$(cat $CONFIG_ENV | grep -w "AOSP_CLANG_VERSION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "USE_CUSTOM_CLANG=$(cat $CONFIG_ENV | grep -w "USE_CUSTOM_CLANG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_CLANG_SOURCE=$(cat $CONFIG_ENV | grep -w "CUSTOM_CLANG_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_CLANG_BRANCH=$(cat $CONFIG_ENV | grep -w "CUSTOM_CLANG_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ENABLE_GCC=$(cat $CONFIG_ENV | grep -w "ENABLE_GCC" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ENABLE_AOSP_GCC_ARM64=$(cat $CONFIG_ENV | grep -w "ENABLE_AOSP_GCC_ARM64" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ENABLE_AOSP_GCC_ARM32=$(cat $CONFIG_ENV | grep -w "ENABLE_AOSP_GCC_ARM32" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "AOSP_GCC_SYSTEM=$(cat $CONFIG_ENV | grep -w "AOSP_GCC_SYSTEM" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "AOSP_GCC_ARM64_VERSION=$(cat $CONFIG_ENV | grep -w "AOSP_GCC_ARM64_VERSION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "AOSP_GCC_ARM32_VERSION=$(cat $CONFIG_ENV | grep -w "AOSP_GCC_ARM32_VERSION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "AOSP_GCC_ANDROID_VERSION=$(cat $CONFIG_ENV | grep -w "AOSP_GCC_ANDROID_VERSION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "AOSP_GCC_RELEASE=$(cat $CONFIG_ENV | grep -w "AOSP_GCC_RELEASE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "USE_CUSTOM_GCC_64=$(cat $CONFIG_ENV | grep -w "USE_CUSTOM_GCC_64" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_GCC_64_SOURCE=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_64_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_GCC_64_BRANCH=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_64_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "USE_CUSTOM_GCC_32=$(cat $CONFIG_ENV | grep -w "USE_CUSTOM_GCC_32" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_GCC_32_SOURCE=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_32_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_GCC_32_BRANCH=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_32_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ENABLE_KERNELSU=$(cat $CONFIG_ENV | grep -w "ENABLE_KERNELSU" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "KERNELSU_INSTALLER=$(cat $CONFIG_ENV | grep -w "KERNELSU_INSTALLER" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "KERNELSU_TAG=$(cat $CONFIG_ENV | grep -w "KERNELSU_TAG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "KSU_EXPECTED_SIZE=$(cat $CONFIG_ENV | grep -w "KSU_EXPECTED_SIZE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "KSU_EXPECTED_HASH=$(cat $CONFIG_ENV | grep -w "KSU_EXPECTED_HASH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "BUILD_KERNELSU_BOOT_IMG=$(cat $CONFIG_ENV | grep -w "BUILD_KERNELSU_BOOT_IMG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "KERNELSU_SOURCE_BOOT_IMAGE=$(cat $CONFIG_ENV | grep -w "KERNELSU_SOURCE_BOOT_IMAGE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ENABLE_MAGISK=$(cat $CONFIG_ENV | grep -w "ENABLE_MAGISK" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "MAGISK_APK=$(cat $CONFIG_ENV | grep -w "MAGISK_APK" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "MAGISK_PATCH_PARTITION=$(cat $CONFIG_ENV | grep -w "MAGISK_PATCH_PARTITION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "MAGISK_SOURCE_BOOT_IMAGE=$(cat $CONFIG_ENV | grep -w "MAGISK_SOURCE_BOOT_IMAGE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "DISABLE-LTO=$(cat $CONFIG_ENV | grep -w "DISABLE-LTO" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "DISABLE_CC_WERROR=$(cat $CONFIG_ENV | grep -w "DISABLE_CC_WERROR" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ADD_KPROBES_CONFIG=$(cat $CONFIG_ENV | grep -w "ADD_KPROBES_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ADD_OVERLAYFS_CONFIG=$(cat $CONFIG_ENV | grep -w "ADD_OVERLAYFS_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "ENABLE_CCACHE=$(cat $CONFIG_ENV | grep -w "ENABLE_CCACHE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "NEED_DTBO=$(cat $CONFIG_ENV | grep -w "NEED_DTBO" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "BUILDER_HOST=$(cat $CONFIG_ENV | grep -w "BUILDER_HOST" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "TC_CUSTOM_CMDS=$(cat $CONFIG_ENV | grep -w "TC_CUSTOM_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
+        echo "EXTRA_CMDS=$(cat $CONFIG_ENV | grep -w "EXTRA_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
+        
+    - name: Set swap space to 10G
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
+
+    - name: Setup build kernel environment
+      run: |
+        echo "BUILD_TIME=$(TZ=Asia/Shanghai date "+%Y%m%d-%H%M")-UTC+8" >> $GITHUB_ENV
+        echo "DEVICE=$(echo ${{ env.KERNEL_CONFIG }} | sed 's!vendor/!!;s/_defconfig//;s/_user//;s/-perf//')" >> $GITHUB_ENV
+        sudo apt update
+        sudo apt install -y git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python2 rename
+        sudo apt upgrade
+        mkdir -p $GITHUB_WORKSPACE/kernel_workspace
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: "temurin"
+        java-version: "17"
+
+    - name: Set up Python 3
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+
+    - name: Download Clang-aosp
+      if: env.ENABLE_CLANG == 'true' && env.USE_AOSP_CLANG == 'true' && env.USE_CUSTOM_CLANG == 'false'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        mkdir clang
+        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ env.AOSP_CLANG_BRANCH }}/clang-${{ env.AOSP_CLANG_VERSION }}.tar.gz
+        tar -C clang/ -zxvf clang-${{ env.AOSP_CLANG_VERSION }}.tar.gz
+        rm -rf clang-${{ env.AOSP_CLANG_VERSION }}.tar.gz
+
+    - name: Download Custom-Clang
+      if: env.ENABLE_CLANG == 'true' && env.USE_AOSP_CLANG == 'false' && env.USE_CUSTOM_CLANG == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        if [[ ${{ env.CUSTOM_CLANG_SOURCE }} =~ git ]]; then
+            if [[ ${{ env.CUSTOM_CLANG_SOURCE }} == *'.tar.gz' ]]; then
+                wget -O clang.tar.gz ${{ env.CUSTOM_CLANG_SOURCE }}
+                mkdir clang
+                tar -C clang/ -zxvf clang.tar.gz
+                rm -rf clang.tar.gz
+            else
+                git clone ${{ env.CUSTOM_CLANG_SOURCE }} -b ${{ env.CUSTOM_CLANG_BRANCH }} clang --depth=1
+            fi        
+        else
+            wget -O clang.zip ${{ env.CUSTOM_CLANG_SOURCE }}
+            mkdir clang
+            unzip clang.zip -d clang/
+            rm -rf clang.zip
+        fi
+
+    - name: Download Gcc-aosp
+      if: env.USE_CUSTOM_GCC_64 == 'false' || env.USE_CUSTOM_GCC_32 == 'false' && env.ENABLE_GCC == 'true' 
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        if [ ${{ env.ENABLE_AOSP_GCC_ARM64 }} = true ]; then
+            mkdir gcc-64
+            wget -O gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/${{ env.AOSP_GCC_SYSTEM }}/aarch64/${{ env.AOSP_GCC_ARM64_VERSION }}/+archive/refs/tags/android-${{ env.AOSP_GCC_ANDROID_VERSION }}_${{ env.AOSP_GCC_RELEASE }}.tar.gz
+            tar -C ./gcc-64/ -zxvf gcc-aarch64.tar.gz
+            echo "GCC_64=CROSS_COMPILE=$GITHUB_WORKSPACE/kernel_workspace/gcc-64/bin/aarch64-linux-android-" >> $GITHUB_ENV
+        fi
+
+        if [ ${{ env.ENABLE_AOSP_GCC_ARM32 }} = true ]; then
+            mkdir gcc-32
+            wget -O gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/${{ env.AOSP_GCC_SYSTEM }}/arm/${{ env.AOSP_GCC_ARM32_VERSION }}/+archive/refs/tags/android-${{ env.AOSP_GCC_ANDROID_VERSION }}_${{ env.AOSP_GCC_RELEASE }}.tar.gz
+            tar -C ./gcc-32/ -zxvf gcc-arm.tar.gz
+            echo "GCC_32=CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin/arm-linux-androideabi-" >> $GITHUB_ENV
+        fi
+
+    - name: Download Custom-Gcc
+      if: env.USE_CUSTOM_GCC_64 == 'true' || env.USE_CUSTOM_GCC_32 == 'true' && env.ENABLE_GCC == 'true' 
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        if [ ${{ env.USE_CUSTOM_GCC_64 }} = true ]; then
+          if [[ ${{ env.CUSTOM_GCC_64_SOURCE }} =~ git ]]; then
+              if [[ ${{ env.CUSTOM_GCC_64_SOURCE }} == *'.tar.gz' ]]; then
+                wget -O gcc-64.tar.gz ${{ env.CUSTOM_CLANG_SOURCE }}
+                mkdir gcc-64
+                tar -C gcc-64/ -zxvf gcc-64.tar.gz
+              else
+                git clone ${{ env.CUSTOM_GCC_64_SOURCE }} -b ${{ env.CUSTOM_GCC_64_BRANCH }} gcc-64 --depth=1
+              fi
+          else
+              wget -O gcc-64.zip ${{ env.CUSTOM_GCC_64_SOURCE }}
+              mkdir gcc-64
+              unzip gcc-64.zip -d gcc-64/
+          fi
+        fi
+        if [ ${{ env.USE_CUSTOM_GCC_64 }} = true ]; then
+          if [[ ${{ env.CUSTOM_GCC_32_SOURCE }} =~ git ]]; then
+              if [[ ${{ env.CUSTOM_GCC_32_SOURCE }} == *'.tar.gz' ]]; then
+                wget -O gcc-32.tar.gz ${{ env.CUSTOM_CLANG_SOURCE }}
+                mkdir gcc-32
+                tar -C gcc-32/ -zxvf gcc-32.tar.gz
+              else
+                git clone ${{ env.CUSTOM_GCC_32_SOURCE }} -b ${{ env.CUSTOM_GCC_32_BRANCH }} gcc-32 --depth=1
+              fi
+          else
+            wget -O gcc-32.zip ${{ env.CUSTOM_GCC_32_SOURCE }}
+            mkdir gcc-32
+            unzip gcc-32.zip -d gcc-32/
+          fi
+        fi
+
+    - name: Build magiskboot tool
+      if: env.BUILD_KERNELSU_BOOT_IMG == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        mkdir tools
+        git clone --recurse-submodules https://github.com/topjohnwu/Magisk.git magiskboot
+        cd magiskboot
+        chmod +x ./build.py
+        ./build.py ndk
+        ./build.py -v binary
+        cp ./native/out/x86_64/magiskboot ../tools/
+        
+    - name: Download kernel source code
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        if [[ ${{ env.KERNEL_SOURCE }} =~ git ]]; then
+          if [[ ${{ env.KERNEL_SOURCE }} == *'.tar.gz' ]]; then
+            wget -O android-kernel.tar.gz ${{ env.KERNEL_SOURCE }}
+            mkdir android-kernel
+            tar -C android-kernel/ -zxvf android-kernel.tar.gz
+          else
+            git clone ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} android-kernel --depth=1
+          fi        
+        else
+          wget -O android-kernel.zip ${{ env.KERNEL_SOURCE }}
+          mkdir android-kernel
+          unzip android-kernel.zip -d android-kernel/
+        fi
+
+    - name: Download source boot image
+      if: env.BUILD_KERNELSU_BOOT_IMG == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        mkdir bootimg_tmp
+        wget -O ./bootimg_tmp/boot-source-kernelsu.img ${{ env.KERNELSU_SOURCE_BOOT_IMAGE }}
+        if [ -f ./bootimg_tmp/boot-source-kernelsu.img ]; then
+            echo "HAVE_KERNELSU_SOURCE_BOOT_IMAGE=true" >> $GITHUB_ENV
+            echo "SOURCE_KERNELSU_BOOTIMG_PATH=$GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-source-kernelsu.img" >> $GITHUB_ENV
+        fi
+        
+    - name: Setup KernelSU
+      if: env.ENABLE_KERNELSU == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+        curl -LSs "${{ env.KERNELSU_INSTALLER }}" | bash -s ${{ env.KERNELSU_TAG }}
+        echo "UPLOADNAME=-KernelSU" >> $GITHUB_ENV
+
+    - name: Setup Configuration for Kernel
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+        if [ ${{ env.DISABLE-LTO }} = true ]; then
+            sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+            sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+            sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+            echo "CONFIG_LTO_NONE=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+        fi
+        if [ ${{ env.DISABLE_CC_WERROR }} = true ]; then
+            echo "CONFIG_CC_WERROR=n" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+        fi
+        if [ ${{ env.ADD_KPROBES_CONFIG }} = true ]; then
+            echo "CONFIG_MODULES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+            echo "CONFIG_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+            echo "CONFIG_HAVE_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+            echo "CONFIG_KPROBE_EVENTS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+        fi
+        if [ ${{ env.ADD_OVERLAYFS_CONFIG }} = true ]; then
+            echo "CONFIG_OVERLAY_FS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+        fi
+
+    - name: Setup ccache
+      if: env.ENABLE_CCACHE == 'true'
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: build-kernel-${{ env.DEVICE }}${{ env.UPLOADNAME }}
+        max-size: 2G
+
+    - name: Build kernel
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+        export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang/bin:$PATH
+        export KBUILD_BUILD_HOST=${{ env.BUILDER_HOST }}
+        export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
+        if [ ! -z ${{ env.KSU_EXPECTED_SIZE }} ] && [ ! -z ${{ env.KSU_EXPECTED_HASH }} ]; then
+          export KSU_EXPECTED_SIZE=${{ env.KSU_EXPECTED_SIZE }}
+          export KSU_EXPECTED_HASH=${{ env.KSU_EXPECTED_HASH }}
+        fi
+        if [ ${{ env.ENABLE_CLANG }} = true ]; then
+          make -j$(nproc --all) CC=clang O=out ARCH=${{ env.ARCH }} ${{ env.TC_CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }} ${{ env.KERNEL_CONFIG }}
+          if [ ${{ env.ENABLE_CCACHE }} = true ]; then
+            make -j$(nproc --all) CC="ccache clang" O=out ARCH=${{ env.ARCH }} ${{ env.TC_CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }}
+          else
+            make -j$(nproc --all) CC=clang O=out ARCH=${{ env.ARCH }} ${{ env.TC_CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }}
+          fi
+        else
+          make -j$(nproc --all) CC=gcc O=out ARCH=${{ env.ARCH }} ${{ env.TC_CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }} ${{ env.KERNEL_CONFIG }}
+          if [ ${{ env.ENABLE_CCACHE }} = true ]; then
+            make -j$(nproc --all) CC="ccache gcc" O=out ARCH=${{ env.ARCH }} ${{ env.TC_CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }}
+          else
+            make -j$(nproc --all) CC=gcc O=out ARCH=${{ env.ARCH }} ${{ env.TC_CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }}
+          fi
+        fi
+
+    - name: Check kernel output files
+      run: |
+       cd $GITHUB_WORKSPACE/kernel_workspace
+       if [ -f android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ]; then
+           echo "CHECK_FILE_IS_OK=true" >> $GITHUB_ENV
+       else
+           echo "Kernel output file is empty"
+           exit 1
+       fi
+       if [ ${{ env.NEED_DTBO }} = true ]; then
+           if [ -f android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img ]; then
+               echo "CHECK_DTBO_IS_OK=true" >> $GITHUB_ENV
+           else
+               echo "DTBO image is empty"
+               exit 1
+           fi
+       fi
+  
+    - name: Make Anykernel3
+      if: env.CHECK_FILE_IS_OK == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        git clone https://github.com/osm0sis/AnyKernel3.git
+        sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
+        sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
+        sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
+        cp android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} AnyKernel3/
+        if [ ${{ env.CHECK_DTBO_IS_OK }} = true ]; then
+            cp android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img AnyKernel3/
+        fi
+        cd ./AnyKernel3/
+        zip -r AnyKernel3 . -x ".git*" -x "README.md" -x "*.zip"
+
+    - name: Make KernelSU boot image
+      if: env.HAVE_KERNELSU_SOURCE_BOOT_IMAGE == 'true' && env.CHECK_FILE_IS_OK == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        chmod +x ./tools/magiskboot
+        cd bootimg_tmp
+        mkdir source kernelbuild
+        cd source
+        $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot unpack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}}
+        cd ..
+        cp -r ./source ./new
+        if [ ${{ env.KERNEL_IMAGE_NAME }} = Image.gz-dtb ]; then
+          cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/kernelbuild
+          $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot split $GITHUB_WORKSPACE/kernel_workspace/android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }}
+          cp -rf kernel $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+          cp -rf kernel_dtb $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+          cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+          $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
+        else
+          cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+          cp -rf $GITHUB_WORKSPACE/kernel_workspace/android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ./kernel
+          $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
+        fi
+        cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp
+        if [ -f boot-kernelsu.img ]; then
+            echo "MAKE_KERNELSU_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
+        else
+            echo "Boot image is empty"
+            exit 1
+        fi
+    
+    - name: Setup Magisk
+      if: env.ENABLE_MAGISK == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        mkdir magisk-patch
+        cd magisk-patch
+        sudo apt install -y rename
+        mkdir magisk
+        cd magisk
+        wget "${{ env.MAGISK_SOURCE_BOOT_IMAGE }}" -O ${{ env.MAGISK_PATCH_PARTITION }}.img
+        wget "${{ env.MAGISK_APK }}" -O Magisk.zip
+        unzip Magisk.zip >> /dev/null
+        cd ./lib/x86_64
+        rename 's/(lib|\.so)//g' *
+        cd ../../
+        mv ./lib/x86_64/* ./assets
+        chmod -R a+x ./assets/*
+        cd assets
+        bash ./boot_patch.sh ../${{ env.MAGISK_PATCH_PARTITION }}.img
+        mv ./new-boot.img $GITHUB_WORKSPACE/kernel_workspace/magisk-patch/boot-magisk.img
+        echo "MAKE_MAGISK_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
+
+    - name: Upload ${{ env.KERNEL_IMAGE_NAME }}
+      if: env.CHECK_FILE_IS_OK == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.KERNEL_IMAGE_NAME }}${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+        path: kernel_workspace/android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }}
+        if-no-files-found: error
+
+    - name: Upload AnyKernel3
+      if: env.CHECK_FILE_IS_OK == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: AnyKernel3-${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+        path: kernel_workspace/AnyKernel3/AnyKernel3.zip
+        if-no-files-found: error
+
+    - name: Upload DTBO image
+      if: env.CHECK_DTBO_IS_OK == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: dtbo-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+        path: kernel_workspace/android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img
+        if-no-files-found: error
+
+    - name: Upload KernelSU boot image
+      if: env.MAKE_KERNELSU_BOOT_IMAGE_IS_OK == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: boot${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+        path: kernel_workspace/bootimg_tmp/boot-kernelsu.img
+        if-no-files-found: error
+    
+    - name: Upload Magisk boot image
+      if: env.MAKE_MAGISK_BOOT_IMAGE_IS_OK == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: boot-Magisk-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+        path: kernel_workspace/magisk-patch/boot-magisk.img
+        if-no-files-found: error
+    
+    - name: Upload Magisk zip
+      if: env.ENABLE_MAGISK == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: Magisk-APK-Installer-${{ env.BUILD_TIME }}
+        path: kernel_workspace/magisk-patch/magisk/Magisk.zip
+        if-no-files-found: error
+
+    - name: Release
+      uses: softprops/action-gh-release@master
+      if: github.event.inputs.release == 'true'
+      with:
+        tag_name: Build-${{ env.BUILD_TIME }}
+        draft: false
+        prerelease: false
+        files: |
+          kernel_workspace/android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }}
+          kernel_workspace/AnyKernel3/AnyKernel3.zip
+          kernel_workspace/android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img
+          kernel_workspace/bootimg_tmp/boot-kernelsu.img
+          kernel_workspace/magisk-patch/boot-magisk.img
+          kernel_workspace/magisk-patch/magisk/Magisk.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
