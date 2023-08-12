@@ -1,4 +1,4 @@
-**中文（简体）** | [English](README_EN-US.md)
+**中文（简体）** | [English](README.md)
 
 # Add KernelSU and Magisk Action
 
