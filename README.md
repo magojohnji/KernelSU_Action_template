@@ -2,6 +2,8 @@
 
 # Add KernelSU and Magisk Action
 
+## Read README frist !!!!!
+
 The ***Plus*** version, can compile kernel, AnyKernel3, boot-kernelsu.img, boot-magisk.img, magisk.zip
 
 Action to compile the Non-GKI kernel, with the optional addition of Magisk, is somewhat universal.
@@ -49,11 +51,11 @@ If you created a config file called **`config_abcdefg.env`** then you should fil
 
 - After that go to Actions and click on the green button `I understand, go ahead and enable them.` Click on Options (default is `Build`) and you'll see `Run workflows` at the top of the big dialog on the right, clicking on that will start the build. If Release is checked, it will release the build.
 
-## Warning :warning: :warning: :warning: :warning.
-Please **be sure** to **first** carefully, conscientiously** read and **understand** the following config file comments!!!!
+## Warning! :warning: :warning: :warning:
+Please **be sure** to first **carefully, conscientiously** read and **understand** the following config file comments!!!!
 
 <details>
-  <summary><h3>❓如何编写配置❓ <h3></summary>
+  <summary><h3>❓How to write a configuration❓ <h3></summary>
 
 ## Configuration
 

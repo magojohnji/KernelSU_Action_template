@@ -2,6 +2,8 @@
 
 # Add KernelSU and Magisk Action
 
+## 先阅读 README！！！
+
 ***Plus***版本，可以编译内核、AnyKernel3、boot-kernelsu.img、boot-magisk.img、magisk.zip
 
 编译 Non-GKI 内核 的 Action，可选添加 Magisk，具有一定的普遍性。
@@ -48,7 +50,7 @@
 
 - 之后进入 Actions，点击绿色按钮`I understand, go ahead and enable them.` 点击选项（默认为 `Build` ）会看见右边的大对话框的上面会有`Run workflows`，点击它会启动构建。若勾选 Release，则会发布 Release
 
-## 警告:warning: :warning: :warning:
+## 警告 :warning: :warning: :warning:
 请**务必**先**仔细，认真**阅读并**理解**以下的配置文件注释！！！
 
 <details>
