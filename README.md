@@ -6,6 +6,8 @@ The ***Plus*** version, can compile kernel, AnyKernel3, boot-kernelsu.img, boot-
 
 Action to compile the Non-GKI kernel, with the optional addition of Magisk, is somewhat universal.
 
+This repository is a real repository, so if you want to see examples of builds, check out the `build` branch of this repository.
+
 ## Support Kernels
 
 - `5.4`
@@ -15,9 +17,7 @@ Action to compile the Non-GKI kernel, with the optional addition of Magisk, is s
 
 ## Use
 
-> This repository is real and valid, if you need to see the compilation example you can go to my compilation repository [MAKSU](https://github.com/magojohnji/MAKSU/actions)
-
-> After compilation, anyKernel3 will be uploaded in `Action` and so on, device checking has been turned off, please make sure your phone is unlocked before flashing it!
+> After compilation, AnyKernel3 will be uploaded in `Action` and so on, device checking has been turned off, please make sure your phone is unlocked before flashing it!
 
 - Star this repository, then Fork this repository to make sure the workflow is running properly.
 
@@ -49,7 +49,11 @@ If you created a config file called **`config_abcdefg.env`** then you should fil
 
 - After that go to Actions and click on the green button `I understand, go ahead and enable them.` Click on Options (default is `Build`) and you'll see `Run workflows` at the top of the big dialog on the right, clicking on that will start the build. If Release is checked, it will release the build.
 
-> Please **be sure** to **read** and **understand** the following configuration file comments **first** carefully!
+## Warning :warning: :warning: :warning: :warning.
+Please **be sure** to **first** carefully, conscientiously** read and **understand** the following config file comments!!!!
+
+<details>
+  <summary><h3>❓如何编写配置❓ <h3></summary>
 
 ## Configuration
 
@@ -470,7 +474,9 @@ on.
         type: boolean
 ```
 
-> Of course you can mix them up :-)
+Of course you can mix them up :-)
+
+</details>
 
 ## Grateful
 

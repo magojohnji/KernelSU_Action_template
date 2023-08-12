@@ -6,6 +6,8 @@
 
 编译 Non-GKI 内核 的 Action，可选添加 Magisk，具有一定的普遍性。
 
+本仓库真实有效，如需查看编译实例可去查看本仓库的 `build` 分支。
+
 ## 支持内核
 
 - `5.4`
@@ -14,8 +16,6 @@
 - `4.9`
 
 ## 使用
-
-> 本仓库真实有效，如需查看编译实例可去我的编译仓库 [MAKSU](https://github.com/magojohnji/MAKSU/actions)
 
 > 编译成功后，会在 `Action` 上传 AnyKernel3 等一系列内容，已经关闭设备检查，请确保手机已经解锁后再刷入！
 
@@ -48,7 +48,11 @@
 
 - 之后进入 Actions，点击绿色按钮`I understand, go ahead and enable them.` 点击选项（默认为 `Build` ）会看见右边的大对话框的上面会有`Run workflows`，点击它会启动构建。若勾选 Release，则会发布 Release
 
-> 请**务必**先**仔细，认真**阅读并**理解**以下的配置文件注释！！！
+## 警告:warning: :warning: :warning:
+请**务必**先**仔细，认真**阅读并**理解**以下的配置文件注释！！！
+
+<details>
+  <summary><h3>❓如何编写配置❓ <h3></summary>
 
 ## 配置
 
@@ -465,7 +469,9 @@ on:
         type: boolean
 ```
 
-> 当然你也可以将他们混合起来 :-)
+当然你也可以将他们混合起来 :-)
+
+</details>
 
 ## 其他
 
