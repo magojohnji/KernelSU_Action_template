@@ -1,29 +1,34 @@
 [Chinese (Simplified)](README_ZH-HANS.md) | **English**
 
-# Add KernelSU and Magisk Action
+# *Add KernelSU and Magisk Action*
 
-## Read README frist !!!!!
+## :warning: :warning: :warning: **Read README frist !!!!!**
 
 The ***Plus*** version, can compile kernel, AnyKernel3, boot-kernelsu.img, boot-magisk.img, magisk.zip
 
-Action to compile the Non-GKI kernel, with the optional addition of Magisk, is somewhat universal.
+The Actions to compile the Non-GKI kernel, with the optional addition of Magisk and KernelSU, is somewhat universal.
 
-This repository is a real repository, so if you want to see examples of builds, check out the `build` branch of this repository.
+**This repository is real, so if you want to see examples of builds, check out the `build` branch of this repository.**
 
-## Support Kernels
+## ***Supported Kernels***
 
-- `5.4`
-- `4.19`
-- `4.14`
-- `4.9`
+- *`5.4`*
+- *`4.19`*
+- *`4.14`*
+- *`4.9`*
+- ***The other versions** ***may*** **be supported, but you need to try it for yourself!***
 
-## Use
+## ***Usage***
 
-> After compilation, AnyKernel3 will be uploaded in `Action` and so on, device checking has been turned off, please make sure your phone is unlocked before flashing it!
+> :warning: :warning: :warning: After compilation, AnyKernel3 will be uploaded in `Action` and so on, device checking has been turned off, please make sure your phone is unlocked before flashing it!
 
 - Star this repository, then Fork this repository to make sure the workflow is running properly.
 
-- Edit the configuration to config.env.xx-xx (your language).simple, then rename the config file to config.env (the name can be customized, but **must** end with `.env`!)
+> Star is a source of motivation for authors, so please don't skimp on your Star!
+
+- Rename the config file to config.env (the name can be customized, but **must** end with `.env`!)
+
+- Write your favorite configuration in the configuration file, whose comments can be found in the lower part of this README.md.
 
 - Open the workflow file (name is customizable, default is [build-kernel.yml] (.github/workflows/build-kernel.yml)) and find the following:
 
@@ -37,7 +42,7 @@ This repository is a real repository, so if you want to see examples of builds, 
       run: |
 
 
->>>>>>> CONFIG_ENV=$(cat config.env.xx-xx.simple | grep -w "CONFIG_ENV" | head -n 1 | cut -d "=" -f 2) <<<<<<<
+->>>>>>> CONFIG_ENV=$(cat config.env.simple | grep -w "CONFIG_ENV" | head -n 1 | cut -d "=" -f 2) <<<<<<<-
 
 
         echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -45,23 +50,24 @@ This repository is a real repository, so if you want to see examples of builds, 
         echo "KERNEL_CONFIG=$(cat $CONFIG_ENV | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
 ```
 
-Change **`config.env.xx-xx.simple`** to the name of your configuration file;
+- Change **`config.env.simple`** to the name of your configuration file. If you created a config file called **`config_abcdefg.env`** then you should fill in **`config_abcdefg.env`** here.
 
-If you created a config file called **`config_abcdefg.env`** then you should fill in **`config_abcdefg.env`** here.
+- After that go to Actions and click on the green button `I understand my workflows, go ahead and enable them.` Click on Options (default is **`Build`**) and you'll see **`Run workflows`** at the top of the big dialog on the right, clicking on that will start the build. If **`Release`** is checked, it will release the build.
 
-- After that go to Actions and click on the green button `I understand, go ahead and enable them.` Click on Options (default is `Build`) and you'll see `Run workflows` at the top of the big dialog on the right, clicking on that will start the build. If Release is checked, it will release the build.
+## ***Warning!*** :warning: :warning: :warning:
 
-## Warning! :warning: :warning: :warning:
-Please **be sure** to first **carefully, conscientiously** read and **understand** the following config file comments!!!!
+Please **be sure** to first **carefully, conscientiously** read and **understand** the following config file comments!!!
+
+**Otherwise you'll get the wrong product, or Actions won't work at all!**
 
 <details>
   <summary><h3>❓How to write a configuration❓ <h3></summary>
 
-## Configuration
+## ***Configuration***
 
-**Some of these configurations contradict each other, please figure out the logic before configuring!!!! **
+**Some of these configurations contradict each other, please figure out the logic before configuring!!!!**
 
-### Config Env
+### **Config Env**
 
 (String)
 
@@ -69,7 +75,7 @@ As the name suggests, the name of this configuration file, **must** be modified!
 
 For example, if you create a configuration file called **`config_abcdefg.env`**, then you should fill in **`CONFIG_ENV=config_abcdefg.env`** here.
 
-### Kernel
+### **Kernel**
 
 #### Kernel Source
 
@@ -119,13 +125,13 @@ Example: Image.gz-dtb
 
 Other common ones are Image, Image.gz.
 
-### Clang
+### **Clang**
 
 #### Enable Clang
 
 (true or false)
 
-Due to [#75](https://github.com/xiaoleGun/KernelSU_Action/issues/75), we provide a customizable way to enable or disable Clang compilation
+We provide a customizable way to enable or disable Clang compilation
 
 
 #### Use AOSP Clang
@@ -138,9 +144,11 @@ You can choose whether to use AOSP Clang or not.
 
 (String)
 
-Due to [#23](https://github.com/xiaoleGun/KernelSU_Action/issues/23), we provide the option to customize Google's upstream branches, the main ones being
+We provide the option to customize Google's upstream branches, the main ones being
+
 | Clang Branch
 | ---------- |
+| main |
 | master |
 | master-kernel-build-2021 | master-kernel-build-2021 | master-kernel-build-2021
 | master-kernel-build-2022 | master-kernel-build-2022 | master-kernel-build-2022
@@ -186,7 +194,7 @@ Supports direct links to git repositories or zip or tar.gz archives.
 
 If you are using a custom Clang, you can customize the branch of a third-party Clang, e.g. ``main``.
 
-### GCC
+### **GCC**
 
 #### Enable GCC 
 
@@ -293,7 +301,7 @@ Custom Gcc 32 source code, support git repositories or direct links to zip or ta
 If you use custom Gcc 32, you can customize the branch of a third-party Gcc, e.g. ``main``.
 
 
-### Enable KernelSU
+### **Enable KernelSU**
 
 (true or false)
 
@@ -349,7 +357,7 @@ As the name suggests, you need to provide a boot image of the source system that
 
 Example: https://raw.githubusercontent.com/abc/def/main/boot/boot.img
 
-### Enable Magisk
+### **Enable Magisk**
 
 (true or false)
 
@@ -381,7 +389,7 @@ Image file of the partition patched by Magisk, requires a direct link.
 
 Example: https://raw.githubusercontent.com/abc/def/main/boot/boot.img
 
-### Build Settings
+### **Build Settings**
 
 #### Disable LTO
 
@@ -422,7 +430,7 @@ Required for some devices
 
 #### Extra cmds
 
-（Extra cmds)
+(strings)
 
 Some kernels need to add some other compilation commands to compile properly, usually no other commands are needed, please search your own kernel's information.
 Please use space between commands.
@@ -435,11 +443,8 @@ Example: LLVM=1 LLVM_IAS=1
 
 Compile toolchain configuration, ~~ you should be able to change these configurations yourself :)~~ Ask the kernel author or analyze the kernel compilation scripts yourself.
 
-## Other
 
-If you find something that doesn’t work, or you need to add or modify functions, please raise **[Issue](https://github.com/magojohnji/Add_KernelSU-Magisk_Action/issues)** to let me know!
-
-## Useful tips (congratulations on reading through the **`configuration`** part)
+## ***Useful tips*** (congratulations on reading through the ***`configuration`*** part)
 
 - If you want to build automatically after modifying the file, you can change the beginning of [build-kernel.yml](.github/workflows/build-kernel.yml) to this:
 
@@ -458,9 +463,7 @@ on.
 
 ```
 
-- If you want a daily timed build, you can change the beginning of [build-kernel.yml](.github/workflows/build-kernel.yml) to look like this:
-
-(executed daily at 2:00 UTC)
+- If you want a daily timed build, you can change the beginning of [build-kernel.yml](.github/workflows/build-kernel.yml) to look like this: (executed daily at 2:00 UTC)
 
 ```yaml
 name: Build
@@ -480,7 +483,11 @@ Of course you can mix them up :-)
 
 </details>
 
-## Grateful
+## ***Other***
+
+If you find something that doesn’t work, or you need to add or modify functions, please raise **[Issue](https://github.com/magojohnji/Add_KernelSU-Magisk_Action/issues)** to let me know!
+
+## ***Grateful***
 
 - [xiaoleGun](https://gitjin.com/xiaoleGun)
 - [AnyKernel3](https://github.com/osm0sis/AnyKernel3)
@@ -491,7 +498,7 @@ Of course you can mix them up :-)
 - [Tonyha](https://github.com/Tonyha7)
 - [action](https://github.com/action)
 
-## LICENSE
+## ***LICENSE***
 
     MIT License
 

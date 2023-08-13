@@ -1,29 +1,34 @@
 **中文（简体）** | [English](README.md)
 
-# Add KernelSU and Magisk Action
+# *Add KernelSU and Magisk Action*
 
-## 先阅读 README！！！
+## :warning: :warning: :warning: **先阅读 README！！！**
 
 ***Plus***版本，可以编译内核、AnyKernel3、boot-kernelsu.img、boot-magisk.img、magisk.zip
 
-编译 Non-GKI 内核 的 Action，可选添加 Magisk，具有一定的普遍性。
+编译 Non-GKI 内核 的 Action，可选添加 Magisk 和 KernelSU，具有一定的普遍性。
 
-本仓库真实有效，如需查看编译实例可去查看本仓库的 `build` 分支。
+**本仓库真实有效，如需查看编译实例可去查看本仓库的 `build` 分支。**
 
-## 支持内核
+## ***支持的内核版本***
 
-- `5.4`
-- `4.19`
-- `4.14`
-- `4.9`
+- *`5.4`*
+- *`4.19`*
+- *`4.14`*
+- *`4.9`*
+- ***其他版本可能支持，但是你必须自行测试！***
 
-## 使用
+## ***使用***
 
-> 编译成功后，会在 `Action` 上传 AnyKernel3 等一系列内容，已经关闭设备检查，请确保手机已经解锁后再刷入！
+> :warning: :warning: :warning: 编译成功后，会在 `Action` 上传 AnyKernel3 等一系列内容，已经关闭设备检查，请确保手机已经解锁后再刷入！
 
 - Star 本仓库，然后 Fork 本仓库，以确保工作流运行正常。
 
-- 按照 config.env.simple 编辑配置，然后将配置文件改名为config.env（名称可以自定义，但**必须**以 `.env` 结尾 ！）
+> Star 是作者的动力来源，请不要吝啬你的 Star！
+
+- 将配置文件改名为config.env（名称可以自定义，但**必须**以 `.env` 结尾 ！）
+
+- 在配置文件中编写你喜欢的配置，配置文件的注释可以在本README.md的下半部分找到。
 
 - 打开工作流文件（名称可自定义，默认为 [build-kernel.yml](.github/workflows/build-kernel.yml) ），找到以下内容：
 
@@ -36,7 +41,7 @@
       run: |
 
 
->>>>>>> CONFIG_ENV=$(cat config.env.xx-xx.simple | grep -w "CONFIG_ENV" | head -n 1 | cut -d "=" -f 2) <<<<<<<
+->>>>>>> CONFIG_ENV=$(cat config.env.xx-xx.simple | grep -w "CONFIG_ENV" | head -n 1 | cut -d "=" -f 2) <<<<<<<-
 
 
         echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -48,19 +53,20 @@
 
 如果你创建了一个叫 **`config_abcdefg.env`** 的配置文件，那你就应该在这里填写 **`config_abcdefg.env`**。
 
-- 之后进入 Actions，点击绿色按钮`I understand, go ahead and enable them.` 点击选项（默认为 `Build` ）会看见右边的大对话框的上面会有`Run workflows`，点击它会启动构建。若勾选 Release，则会发布 Release
+- 之后进入 Actions，点击绿色按钮`I understand my workflows, go ahead and enable them.` 点击选项（默认为 `Build` ）会看见右边的大对话框的上面会有`Run workflows`，点击它会启动构建。若勾选 Release，则会发布 Release。
 
-## 警告 :warning: :warning: :warning:
+## ***警告*** :warning: :warning: :warning:
+
 请**务必**先**仔细，认真**阅读并**理解**以下的配置文件注释！！！
 
 <details>
   <summary><h3>❓如何编写配置❓ <h3></summary>
 
-## 配置
+## ***配置***
 
 **其中有些配置互相矛盾，请搞清逻辑关系后再进行配置！！！**
 
-### Config Env
+### **Config Env**
 
 （字符串）
 
@@ -68,7 +74,7 @@
 
 例如：你创建了一个叫 **`config_abcdefg.env`** 的配置文件，那你就应该在这里填写 **`CONFIG_ENV=config_abcdefg.env`**。
 
-### Kernel
+### **Kernel**
 
 #### Kernel Source
 
@@ -118,13 +124,13 @@
 
 常见还有 Image、Image.gz
 
-### Clang
+### **Clang**
 
 #### Enable Clang
 
 （ true 或 false ）
 
-由于 [#75](https://github.com/xiaoleGun/KernelSU_Action/issues/75) 的需要，我们提供可自定义是否开启 Clang 编译
+我们提供可自定义是否开启 Clang 编译
 
 
 #### Use AOSP Clang
@@ -137,9 +143,11 @@
 
 （字符串）
 
-由于 [#23](https://github.com/xiaoleGun/KernelSU_Action/issues/23) 的需要，我们提供可自定义 Google 上游分支的选项，主要的有分支有
+我们提供可自定义 Google 上游分支的选项，主要的有分支有：
+
 | Clang 分支 |
 | ---------- |
+| main |
 | master |
 | master-kernel-build-2021 |
 | master-kernel-build-2022 |
@@ -185,7 +193,7 @@
 
 如果使用自定义 Clang，则可自定义第三方 Clang 的分支，例如 `main`
 
-### GCC
+### **GCC**
 
 #### Enable GCC 
 
@@ -292,7 +300,7 @@
 如果使用自定义 Gcc 32，则可自定义第三方 Gcc 的分支，例如 `main`
 
 
-### Enable KernelSU
+### **Enable KernelSU**
 
 （ true 或 false ）
 
@@ -348,7 +356,7 @@ MlgmXyysd修改版：https://raw.githubusercontent.com/MlgmXyysd/KernelSU_Debug/
 
 例如: https://raw.githubusercontent.com/abc/def/main/boot/boot.img
 
-### Enable Magisk
+### **Enable Magisk**
 
 （ true 或 false ）
 
@@ -380,7 +388,7 @@ Magisk 所修补的分区的镜像文件，需要直链。
 
 例如：https://raw.githubusercontent.com/abc/def/main/boot/boot.img
 
-### Build Settings
+### **Build Settings**
 
 #### Disable LTO
 
@@ -434,7 +442,7 @@ LTO 用于优化内核，但有些时候会导致错误
 
 编译工具链配置，~~自己改改这些配置应该都会吧 :)~~ 自行询问内核作者或分析内核编译脚本
 
-## 有用的技巧（恭喜你读完了 **`配置`** 部分）
+## ***有用的技巧***（恭喜你读完了 **`配置`** 部分）
 
 - 如果想要在修改文件后自动构建，则可以将 [build-kernel.yml](.github/workflows/build-kernel.yml) 的开头部分改成这样：
 
