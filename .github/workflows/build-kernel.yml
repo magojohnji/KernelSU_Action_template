@@ -420,7 +420,7 @@ jobs:
       uses: softprops/action-gh-release@master
       if: github.event.inputs.release == 'true'
       with:
-        tag_name: Build-${{ env.BUILD_TIME }}
+        tag_name: Build-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
         draft: false
         prerelease: false
         files: |
@@ -432,3 +432,4 @@ jobs:
           kernel_workspace/magisk-patch/magisk/Magisk.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
