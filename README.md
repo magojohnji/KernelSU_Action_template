@@ -494,7 +494,7 @@ If you find something that doesn’t work, or you need to add or modify function
 - [xiaoleGun](https://gitjin.com/xiaoleGun)
 - [AnyKernel3](https://github.com/osm0sis/AnyKernel3)
 - [AOSP](https://android.googlesource.com)
-- [KernelSU](https://github.com/tiann/KernelSU)
+- [tiann](https://github.com/tiann)
 - [topjohnwu](https://github.com/topjohnwu)
 - [xiaoxindada](https://github.com/xiaoxindada)
 - [Tonyha](https://github.com/Tonyha7)
