@@ -41,7 +41,7 @@
       run: |
 
 
-->>>>>>> CONFIG_ENV=$(cat config.env.xx-xx.simple | grep -w "CONFIG_ENV" | head -n 1 | cut -d "=" -f 2) <<<<<<<-
+->>>>>>> CONFIG_ENV=config.env.simple <<<<<<<-
 
 
         echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -49,7 +49,7 @@
         echo "KERNEL_CONFIG=$(cat $CONFIG_ENV | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
 ```
 
-将 **`config.env.xx-xx.simple`** 改为你的配置文件名称；
+将 **`config.env.simple`** 改为你的配置文件名称；
 
 如果你创建了一个叫 **`config_abcdefg.env`** 的配置文件，那你就应该在这里填写 **`config_abcdefg.env`**。
 
@@ -66,15 +66,11 @@
 
 **其中有些配置互相矛盾，请搞清逻辑关系后再进行配置！！！**
 
-### **Config Env**
-
-（字符串）
-
-顾名思义，本配置文件的名称，**必须**修改！否则你配置这么久就是浪费。
-
-例如：你创建了一个叫 **`config_abcdefg.env`** 的配置文件，那你就应该在这里填写 **`CONFIG_ENV=config_abcdefg.env`**。
+---
 
 ### **Kernel**
+
+---
 
 #### Kernel Source
 
@@ -125,6 +121,8 @@
 常见还有 Image、Image.gz
 
 ### **Clang**
+
+---
 
 #### Enable Clang
 
@@ -194,6 +192,8 @@
 如果使用自定义 Clang，则可自定义第三方 Clang 的分支，例如 `main`
 
 ### **GCC**
+
+---
 
 #### Enable GCC 
 
@@ -389,6 +389,8 @@ Magisk 所修补的分区的镜像文件，需要直链。
 例如：https://raw.githubusercontent.com/abc/def/main/boot/boot.img
 
 ### **Build Settings**
+
+---
 
 #### Disable LTO
 

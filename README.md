@@ -42,7 +42,7 @@ The Actions to compile the Non-GKI kernel, with the optional addition of Magisk 
       run: |
 
 
-->>>>>>> CONFIG_ENV=$(cat config.env.simple | grep -w "CONFIG_ENV" | head -n 1 | cut -d "=" -f 2) <<<<<<<-
+->>>>>>> CONFIG_ENV=config.env.simple <<<<<<<-
 
 
         echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -67,16 +67,12 @@ Please **be sure** to first **carefully, conscientiously** read and **understand
 
 **Some of these configurations contradict each other, please figure out the logic before configuring!!!!**
 
-### **Config Env**
-
-(String)
-
-As the name suggests, the name of this configuration file, **must** be modified! Otherwise it's a waste for you to configure it for so long.
-
-For example, if you create a configuration file called **`config_abcdefg.env`**, then you should fill in **`CONFIG_ENV=config_abcdefg.env`** here.
+---
 
 ### **Kernel**
 
+---
+ 
 #### Kernel Source
 
 (HTTP link)
@@ -126,6 +122,8 @@ Example: Image.gz-dtb
 Other common ones are Image, Image.gz.
 
 ### **Clang**
+
+---
 
 #### Enable Clang
 
@@ -195,6 +193,8 @@ Supports direct links to git repositories or zip or tar.gz archives.
 If you are using a custom Clang, you can customize the branch of a third-party Clang, e.g. ``main``.
 
 ### **GCC**
+
+---
 
 #### Enable GCC 
 
@@ -390,6 +390,8 @@ Image file of the partition patched by Magisk, requires a direct link.
 Example: https://raw.githubusercontent.com/abc/def/main/boot/boot.img
 
 ### **Build Settings**
+
+---
 
 #### Disable LTO
 
