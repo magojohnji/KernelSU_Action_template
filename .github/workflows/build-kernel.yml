@@ -12,7 +12,7 @@ jobs:
   build:
     permissions:
       contents: write
-    name: Build Kernel by ${{ github.actor }}
+    name: Work by ${{ github.actor }}
     runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id
     env:
@@ -23,9 +23,9 @@ jobs:
     - name: Check out
       uses: actions/checkout@v3
 
-    - name: Read Building Configuration
+    - name: Read the configuration
       run: |
-        CONFIG_ENV=config.env.simple
+        CONFIG_ENV=config.properties.simple
         echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNEL_SOURCE_BRANCH=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNEL_CONFIG=$(cat $CONFIG_ENV | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -33,6 +33,7 @@ jobs:
         echo "ARCH=$(cat $CONFIG_ENV | grep -w "ARCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "ENABLE_CLANG=$(cat $CONFIG_ENV | grep -w "ENABLE_CLANG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "USE_AOSP_CLANG=$(cat $CONFIG_ENV | grep -w "USE_AOSP_CLANG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "AOSP_CLANG_SYSTEM=$(cat $CONFIG_ENV | grep -w "AOSP_CLANG_SYSTEM" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "AOSP_CLANG_BRANCH=$(cat $CONFIG_ENV | grep -w "AOSP_CLANG_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "AOSP_CLANG_VERSION=$(cat $CONFIG_ENV | grep -w "AOSP_CLANG_VERSION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "USE_CUSTOM_CLANG=$(cat $CONFIG_ENV | grep -w "USE_CUSTOM_CLANG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -73,12 +74,12 @@ jobs:
         echo "TC_CUSTOM_CMDS=$(cat $CONFIG_ENV | grep -w "TC_CUSTOM_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
         echo "EXTRA_CMDS=$(cat $CONFIG_ENV | grep -w "EXTRA_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
         
-    - name: Set swap space to 10G
+    - name: Set Swap to 10GB
       uses: pierotofy/set-swap-space@master
       with:
         swap-size-gb: 10
 
-    - name: Setup build kernel environment
+    - name: Setting up the kernel compilation environment
       run: |
         echo "BUILD_TIME=$(TZ=Asia/Shanghai date "+%Y%m%d-%H%M")-UTC+8" >> $GITHUB_ENV
         echo "DEVICE=$(echo ${{ env.KERNEL_CONFIG }} | sed 's!vendor/!!;s/_defconfig//;s/_user//;s/-perf//')" >> $GITHUB_ENV
@@ -98,16 +99,16 @@ jobs:
       with:
         python-version: "3.x"
 
-    - name: Download Clang-aosp
+    - name: Download AOSP Clang
       if: env.ENABLE_CLANG == 'true' && env.USE_AOSP_CLANG == 'true' && env.USE_CUSTOM_CLANG == 'false'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         mkdir clang
-        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ env.AOSP_CLANG_BRANCH }}/clang-${{ env.AOSP_CLANG_VERSION }}.tar.gz
+        wget https://android.googlesource.com/platform/prebuilts/clang/host/${{ env.AOSP_CLANG_SYSTEM }}/+archive/refs/heads/${{ env.AOSP_CLANG_BRANCH }}/clang-${{ env.AOSP_CLANG_VERSION }}.tar.gz
         tar -C clang/ -zxvf clang-${{ env.AOSP_CLANG_VERSION }}.tar.gz
         rm -rf clang-${{ env.AOSP_CLANG_VERSION }}.tar.gz
 
-    - name: Download Custom-Clang
+    - name: Download Custom Clang
       if: env.ENABLE_CLANG == 'true' && env.USE_AOSP_CLANG == 'false' && env.USE_CUSTOM_CLANG == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -127,7 +128,7 @@ jobs:
             rm -rf clang.zip
         fi
 
-    - name: Download Gcc-aosp
+    - name: Download AOSP Gcc
       if: env.USE_CUSTOM_GCC_64 == 'false' || env.USE_CUSTOM_GCC_32 == 'false' && env.ENABLE_GCC == 'true' 
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -145,7 +146,7 @@ jobs:
             echo "GCC_32=CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin/arm-linux-androideabi-" >> $GITHUB_ENV
         fi
 
-    - name: Download Custom-Gcc
+    - name: Download Custom Gcc
       if: env.USE_CUSTOM_GCC_64 == 'true' || env.USE_CUSTOM_GCC_32 == 'true' && env.ENABLE_GCC == 'true' 
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -180,7 +181,7 @@ jobs:
           fi
         fi
 
-    - name: Build magiskboot tool
+    - name: Setup magiskboot
       if: env.BUILD_KERNELSU_BOOT_IMG == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -192,7 +193,7 @@ jobs:
         ./build.py -v binary
         cp ./native/out/x86_64/magiskboot ../tools/
         
-    - name: Download kernel source code
+    - name: Download the kernel source code
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         if [[ ${{ env.KERNEL_SOURCE }} =~ git ]]; then
@@ -209,7 +210,7 @@ jobs:
           unzip android-kernel.zip -d android-kernel/
         fi
 
-    - name: Download source boot image
+    - name: Download source boot image file for KernelSU 
       if: env.BUILD_KERNELSU_BOOT_IMG == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -220,6 +221,7 @@ jobs:
             echo "SOURCE_KERNELSU_BOOTIMG_PATH=$GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-source-kernelsu.img" >> $GITHUB_ENV
         fi
         
+    
     - name: Setup KernelSU
       if: env.ENABLE_KERNELSU == 'true'
       run: |
@@ -227,7 +229,7 @@ jobs:
         curl -LSs "${{ env.KERNELSU_INSTALLER }}" | bash -s ${{ env.KERNELSU_TAG }}
         echo "UPLOADNAME=-KernelSU" >> $GITHUB_ENV
 
-    - name: Setup Configuration for Kernel
+    - name: Setting the kernel compilation configuration
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
         if [ ${{ env.DISABLE-LTO }} = true ]; then
@@ -282,25 +284,25 @@ jobs:
           fi
         fi
 
-    - name: Check kernel output files
+    - name: Checking the kernel compilation product
       run: |
        cd $GITHUB_WORKSPACE/kernel_workspace
        if [ -f android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ]; then
            echo "CHECK_FILE_IS_OK=true" >> $GITHUB_ENV
        else
-           echo "Kernel output file is empty"
+           echo "Kernel output file is empty or broken."
            exit 1
        fi
        if [ ${{ env.NEED_DTBO }} = true ]; then
            if [ -f android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img ]; then
                echo "CHECK_DTBO_IS_OK=true" >> $GITHUB_ENV
            else
-               echo "DTBO image is empty"
+               echo "DTBO image is empty or broken."
                exit 1
            fi
        fi
   
-    - name: Make Anykernel3
+    - name: Setting up AnyKenrel3
       if: env.CHECK_FILE_IS_OK == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -314,8 +316,14 @@ jobs:
         fi
         cd ./AnyKernel3/
         zip -r AnyKernel3 . -x ".git*" -x "README.md" -x "*.zip"
+        if [ -f ./AnyKernel3.zip ]; then
+           echo "AK3_IS_OK=true" >> $GITHUB_ENV
+        else
+           echo "AnyKernel3 output file is empty or broken."
+           exit 1
+        fi
 
-    - name: Make KernelSU boot image
+    - name: Setting up KernelSU boot image
       if: env.HAVE_KERNELSU_SOURCE_BOOT_IMAGE == 'true' && env.CHECK_FILE_IS_OK == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -342,11 +350,11 @@ jobs:
         if [ -f boot-kernelsu.img ]; then
             echo "MAKE_KERNELSU_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
         else
-            echo "Boot image is empty"
+            echo "Magisk Boot image is empty or broken."
             exit 1
         fi
     
-    - name: Setup Magisk
+    - name: Setting up Magisk boot image
       if: env.ENABLE_MAGISK == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -368,6 +376,7 @@ jobs:
         mv ./new-boot.img $GITHUB_WORKSPACE/kernel_workspace/magisk-patch/boot-magisk.img
         echo "MAKE_MAGISK_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
 
+
     - name: Upload ${{ env.KERNEL_IMAGE_NAME }}
       if: env.CHECK_FILE_IS_OK == 'true'
       uses: actions/upload-artifact@v3
@@ -377,7 +386,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload AnyKernel3
-      if: env.CHECK_FILE_IS_OK == 'true'
+      if: env.CHECK_FILE_IS_OK == 'true' && env.AK3_IS_OK == 'true'
       uses: actions/upload-artifact@v3
       with:
         name: AnyKernel3-${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
@@ -401,7 +410,7 @@ jobs:
         if-no-files-found: error
     
     - name: Upload Magisk boot image
-      if: env.MAKE_MAGISK_BOOT_IMAGE_IS_OK == 'true'
+      if: env.ENABLE_MAGISK == 'true' && env.MAKE_MAGISK_BOOT_IMAGE_IS_OK == 'true'
       uses: actions/upload-artifact@v3
       with:
         name: boot-Magisk-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
@@ -432,4 +441,3 @@ jobs:
           kernel_workspace/magisk-patch/magisk/Magisk.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        

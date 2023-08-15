@@ -138,6 +138,21 @@ We provide a customizable way to enable or disable Clang compilation
 
 You can choose whether to use AOSP Clang or not.
 
+#### AOSP CLANG System
+
+(String)
+
+The system to which Clang applies
+
+Example:
+darwin-universal
+darwin-x86
+linux-x86
+windows-x86
+windows-x86_32
+
+Default is `linux-x86`, please go to [AOSP Clang](https://android.googlesource.com/platform/prebuilts/clang/host/) for customization.
+
 #### AOSP Clang Branch
 
 (String)

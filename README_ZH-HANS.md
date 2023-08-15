@@ -137,6 +137,21 @@
 
 可以选择是否用 AOSP 的 Clang
 
+#### AOSP CLANG System
+
+（字符串）
+
+Clang所适用的系统
+
+例如：
+darwin-universal
+darwin-x86
+linux-x86
+windows-x86
+windows-x86_32
+
+默认为 `linux-x86`，需要自定义请去 [AOSP Clang](https://android.googlesource.com/platform/prebuilts/clang/host/) 查看。 
+
 #### AOSP Clang Branch
 
 （字符串）
