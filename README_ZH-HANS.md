@@ -500,6 +500,71 @@ on:
 
 </details>
 
+<details>
+  <summary><h3>config.properties实例<h3></summary>
+
+## 文件
+> 这个文件适用于编译 violet (Redmi Note 7 Pro) 的带有 KernelSU 的内核
+
+```properties
+KERNEL_SOURCE=https://github.com/magojohnji/msm-4.14.git
+KERNEL_SOURCE_BRANCH=R
+KERNEL_CONFIG=vendor/violet-perf_defconfig
+KERNEL_IMAGE_NAME=Image.gz-dtb
+ARCH=arm64
+
+ENABLE_CLANG=true
+USE_AOSP_CLANG=false
+AOSP_CLANG_SYSTEM=linux-x86
+AOSP_CLANG_BRANCH=master
+AOSP_CLANG_VERSION=r450784e
+USE_CUSTOM_CLANG=true
+CUSTOM_CLANG_SOURCE=https://gitlab.com/Panchajanya1999/azure-clang.git
+CUSTOM_CLANG_BRANCH=main
+
+ENABLE_GCC=true
+ENABLE_AOSP_GCC_ARM64=false
+ENABLE_AOSP_GCC_ARM32=false
+AOSP_GCC_SYSTEM=linux-x86
+AOSP_GCC_ARM64_VERSION=aarch64-linux-android-4.9
+AOSP_GCC_ARM32_VERSION=arm-linux-androideabi-4.9
+AOSP_GCC_ANDROID_VERSION=12.1.0
+AOSP_GCC_RELEASE=r27
+USE_CUSTOM_GCC_64=true
+CUSTOM_GCC_64_SOURCE=https://github.com/magojohnji/gcc-arm64.git
+CUSTOM_GCC_64_BRANCH=gcc-master
+USE_CUSTOM_GCC_32=true
+CUSTOM_GCC_32_SOURCE=https://github.com/magojohnji/gcc-arm32.git
+CUSTOM_GCC_32_BRANCH=master
+
+ENABLE_KERNELSU=true
+KERNELSU_INSTALLER=https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
+KERNELSU_TAG=main
+KSU_EXPECTED_SIZE=
+KSU_EXPECTED_HASH=
+BUILD_KERNELSU_BOOT_IMG=true
+KERNELSU_SOURCE_BOOT_IMAGE=https://raw.githubusercontent.com/magojohnji/bin/main/boot_PE13_violet.img
+
+ENABLE_MAGISK=true
+MAGISK_APK=https://cdn.jsdelivr.net/gh/magojohnji/magisk-file-host@master/delta/apk/canary.apk
+MAGISK_PATCH_PARTITION=boot
+MAGISK_SOURCE_BOOT_IMAGE=https://raw.githubusercontent.com/magojohnji/bin/main/boot_PE13_violet.img
+
+DISABLE-LTO=false
+DISABLE_CC_WERROR=false
+ADD_KPROBES_CONFIG=true
+ADD_OVERLAYFS_CONFIG=true
+ENABLE_CCACHE=true
+NEED_DTBO=false
+BUILDER_HOST=Github-Action
+
+TC_CUSTOM_CMDS:CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+EXTRA_CMDS:AR=llvm-ar OBJDUMP=llvm-objdump STRIP=llvm-strip NM=llvm-nm OBJCOPY=llvm-objcopy LD=ld.lld
+
+```
+
+</details>
+
 ## 其他
 
 如果你有发现无法运行的情况，或需要添加、修改功能，请提出 **[Issue](https://github.com/magojohnji/Add_KernelSU-Magisk_Action/issues)** 来让我知道！
