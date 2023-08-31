@@ -186,13 +186,9 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         mkdir tools
-        git clone --recurse-submodules https://github.com/topjohnwu/Magisk.git magiskboot
-        cd magiskboot
-        chmod +x ./build.py
-        ./build.py ndk
-        ./build.py -v binary
-        cp ./native/out/x86_64/magiskboot ../tools/
-        
+        git clone https://github.com/magojohnji/magiskboot.git --depth=1 magiskboot
+        cp ./magiskboot/x86_64/magiskboot ../tools/
+        rm -rf ./magiskboot
     - name: Download the kernel source code
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
