@@ -563,6 +563,8 @@ EXTRA_CMDS:AR=llvm-ar OBJDUMP=llvm-objdump STRIP=llvm-strip NM=llvm-nm OBJCOPY=l
 
 ```
 
+</details>
+
 ## ***Other***
 
 If you find something that doesn’t work, or you need to add or modify functions, please raise **[Issue](https://github.com/magojohnji/Add_KernelSU-Magisk_Action/issues)** to let me know!
