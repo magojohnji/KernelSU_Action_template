@@ -8,7 +8,7 @@
 
 编译 Non-GKI 内核 的 Action，可选添加 Magisk 和 KernelSU，具有一定的普遍性。
 
-**本仓库真实有效，如需查看编译实例可去查看本仓库的 `build` 分支。**
+**本仓库真实有效，如需查看编译实例可去查看叫 MAKSU 的[编译仓库](https://github.com/magojohnji/MAKSU/actions)。**
 
 ## ***支持的内核版本***
 

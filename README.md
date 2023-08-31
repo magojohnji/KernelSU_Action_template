@@ -8,7 +8,7 @@ The ***Plus*** version, can compile kernel, AnyKernel3, boot-kernelsu.img, boot-
 
 The Actions to compile the Non-GKI kernel, with the optional addition of Magisk and KernelSU, is somewhat universal.
 
-**This repository is real, so if you want to see examples of builds, check out the `build` branch of this repository.**
+**This repository is real, so if you want to see examples of builds, check out [the build repository](https://github.com/magojohnji/MAKSU/actions) named MAKSU.**
 
 ## ***Supported Kernels***
 
