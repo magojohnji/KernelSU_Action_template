@@ -1,4 +1,4 @@
-name: Build
+name: Build example
 on:
   workflow_dispatch:
     inputs:
@@ -12,7 +12,7 @@ jobs:
   build:
     permissions:
       contents: write
-    name: Work by ${{ github.actor }}
+    name: Build by ${{ github.actor }}
     runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id
     env:
@@ -50,9 +50,9 @@ jobs:
         echo "USE_CUSTOM_GCC_64=$(cat $CONFIG_ENV | grep -w "USE_CUSTOM_GCC_64" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CUSTOM_GCC_64_SOURCE=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_64_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CUSTOM_GCC_64_BRANCH=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_64_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "USE_CUSTOM_GCC_32=$(cat $CONFIG_ENV | grep -w "USE_CUSTOM_GCC_32" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "CUSTOM_GCC_32_SOURCE=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_32_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_GCC_64_BIN=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_64_BIN" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CUSTOM_GCC_32_BRANCH=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_32_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_GCC_32_BIN=$(cat $CONFIG_ENV | grep -w "CUSTOM_GCC_32_BIN" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "ENABLE_KERNELSU=$(cat $CONFIG_ENV | grep -w "ENABLE_KERNELSU" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNELSU_INSTALLER=$(cat $CONFIG_ENV | grep -w "KERNELSU_INSTALLER" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNELSU_TAG=$(cat $CONFIG_ENV | grep -w "KERNELSU_TAG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -64,6 +64,7 @@ jobs:
         echo "MAGISK_APK=$(cat $CONFIG_ENV | grep -w "MAGISK_APK" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "MAGISK_PATCH_PARTITION=$(cat $CONFIG_ENV | grep -w "MAGISK_PATCH_PARTITION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "MAGISK_SOURCE_BOOT_IMAGE=$(cat $CONFIG_ENV | grep -w "MAGISK_SOURCE_BOOT_IMAGE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "MIX_KERNELSU_MAGISK_BOOT_IMAGE=$(cat $CONFIG_ENV | grep -w "MIX_KERNELSU_MAGISK_BOOT_IMAGE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "DISABLE-LTO=$(cat $CONFIG_ENV | grep -w "DISABLE-LTO" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "DISABLE_CC_WERROR=$(cat $CONFIG_ENV | grep -w "DISABLE_CC_WERROR" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "ADD_KPROBES_CONFIG=$(cat $CONFIG_ENV | grep -w "ADD_KPROBES_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -73,11 +74,6 @@ jobs:
         echo "BUILDER_HOST=$(cat $CONFIG_ENV | grep -w "BUILDER_HOST" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "TC_CUSTOM_CMDS=$(cat $CONFIG_ENV | grep -w "TC_CUSTOM_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
         echo "EXTRA_CMDS=$(cat $CONFIG_ENV | grep -w "EXTRA_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
-        
-    - name: Set Swap to 10GB
-      uses: pierotofy/set-swap-space@master
-      with:
-        swap-size-gb: 10
 
     - name: Setting up the kernel compilation environment
       run: |
@@ -87,6 +83,11 @@ jobs:
         sudo apt install -y git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python2 rename
         sudo apt upgrade
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
+
+    - name: Set Swap to 10GB
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
 
     - name: Set up JDK 17
       uses: actions/setup-java@v3
@@ -164,7 +165,9 @@ jobs:
               mkdir gcc-64
               unzip gcc-64.zip -d gcc-64/
           fi
+          echo "GCC_64=CROSS_COMPILE=$GITHUB_WORKSPACE/kernel_workspace/gcc-64/bin/${{ env.CUSTOM_GCC_64_BIN }}" >> $GITHUB_ENV
         fi
+
         if [ ${{ env.USE_CUSTOM_GCC_64 }} = true ]; then
           if [[ ${{ env.CUSTOM_GCC_32_SOURCE }} =~ git ]]; then
               if [[ ${{ env.CUSTOM_GCC_32_SOURCE }} == *'.tar.gz' ]]; then
@@ -179,16 +182,20 @@ jobs:
             mkdir gcc-32
             unzip gcc-32.zip -d gcc-32/
           fi
+          echo "GCC_32=CROSS_COMPILE=$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin/${{ env.CUSTOM_GCC_32_BIN }}" >> $GITHUB_ENV
         fi
 
-    - name: Setup magiskboot
+    - name: Download magiskboot
       if: env.BUILD_KERNELSU_BOOT_IMG == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         mkdir tools
-        git clone https://github.com/magojohnji/magiskboot.git --depth=1 magiskboot
-        cp ./magiskboot/x86_64/magiskboot ../tools/
-        rm -rf ./magiskboot
+        git clone --recurse-submodules https://github.com/magojohnji/magiskboot-linux.git magiskboot
+        cd magiskboot
+        cp ./x86_64/magiskboot ../tools/
+        cd ..
+        rm -rf magiskboot
+        
     - name: Download the kernel source code
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
@@ -346,7 +353,7 @@ jobs:
         if [ -f boot-kernelsu.img ]; then
             echo "MAKE_KERNELSU_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
         else
-            echo "Magisk Boot image is empty or broken."
+            echo "KernelSU Boot image is empty or broken."
             exit 1
         fi
     
@@ -356,7 +363,6 @@ jobs:
         cd $GITHUB_WORKSPACE/kernel_workspace
         mkdir magisk-patch
         cd magisk-patch
-        sudo apt install -y rename
         mkdir magisk
         cd magisk
         wget "${{ env.MAGISK_SOURCE_BOOT_IMAGE }}" -O ${{ env.MAGISK_PATCH_PARTITION }}.img
@@ -373,6 +379,28 @@ jobs:
         echo "MAKE_MAGISK_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
 
 
+    - name: Mixing KernelSU and Magisk boot image
+      if: env.MAKE_KERNELSU_BOOT_IMAGE_IS_OK == 'true' && env.ENABLE_MAGISK == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        mkdir magisk-patch-kernelsu
+        cd magisk-patch-kernelsu
+        mkdir magisk
+        cd magisk
+        cp $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img ./${{ env.MAGISK_PATCH_PARTITION }}.img
+        wget "${{ env.MAGISK_APK }}" -O Magisk.zip
+        unzip Magisk.zip >> /dev/null
+        cd ./lib/x86_64
+        rename 's/(lib|\.so)//g' *
+        cd ../../
+        mv ./lib/x86_64/* ./assets
+        chmod -R a+x ./assets/*
+        cd assets
+        bash ./boot_patch.sh ../${{ env.MAGISK_PATCH_PARTITION }}.img
+        mv ./new-boot.img $GITHUB_WORKSPACE/kernel_workspace/magisk-patch-kernelsu/boot-kernelsu-magisk.img
+        echo "MAKE_KERNELSU_MAGISK_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
+
+
     - name: Upload ${{ env.KERNEL_IMAGE_NAME }}
       if: env.CHECK_FILE_IS_OK == 'true'
       uses: actions/upload-artifact@v3
@@ -385,7 +413,7 @@ jobs:
       if: env.CHECK_FILE_IS_OK == 'true' && env.AK3_IS_OK == 'true'
       uses: actions/upload-artifact@v3
       with:
-        name: AnyKernel3-${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+        name: AnyKernel3${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
         path: kernel_workspace/AnyKernel3/AnyKernel3.zip
         if-no-files-found: error
 
@@ -421,6 +449,14 @@ jobs:
         path: kernel_workspace/magisk-patch/magisk/Magisk.zip
         if-no-files-found: error
 
+    - name: Upload KernelSU and Magisk mixed boot image
+      if: env.MAKE_KERNELSU_MAGISK_BOOT_IMAGE_IS_OK == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: boot-KernelSU-Magisk-${{ env.BUILD_TIME }}
+        path: kernel_workspace/magisk-patch-kernelsu/boot-kernelsu-magisk.img
+        if-no-files-found: error
+
     - name: Release
       uses: softprops/action-gh-release@master
       if: github.event.inputs.release == 'true'
@@ -434,6 +470,7 @@ jobs:
           kernel_workspace/android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img
           kernel_workspace/bootimg_tmp/boot-kernelsu.img
           kernel_workspace/magisk-patch/boot-magisk.img
+          kernel_workspace/magisk-patch-kernelsu/boot-kernelsu-magisk.img
           kernel_workspace/magisk-patch/magisk/Magisk.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

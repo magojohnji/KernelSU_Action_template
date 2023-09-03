@@ -1,24 +1,27 @@
 **中文（简体）** | [English](README.md)
 
-# *Add KernelSU and Magisk Action*
+# Add KernelSU and Magisk Action
 
 ## :warning: :warning: :warning: **先阅读 README！！！**
 
-***Plus***版本，可以编译内核、AnyKernel3、boot-kernelsu.img、boot-magisk.img、magisk.zip
+***Plus***版本，可以编译内核、AnyKernel3 和 boot 镜像
 
 编译 Non-GKI 内核 的 Action，可选添加 Magisk 和 KernelSU，具有一定的普遍性。
+
+:warning: **本项目的本质是简化配置编译环境等步骤（所有类似的仓库都是如此），内核编译的各项参数仍需你自己寻找，否则编译将失败！**
 
 **本仓库真实有效，如需查看编译实例可去查看叫 MAKSU 的[编译仓库](https://github.com/magojohnji/MAKSU/actions)。**
 
 ## ***支持的内核版本***
 
+- *`5.10`*
 - *`5.4`*
 - *`4.19`*
 - *`4.14`*
 - *`4.9`*
 - ***其他版本可能支持，但是你必须自行测试！***
 
-## ***使用***
+## **使用**
 
 > :warning: :warning: :warning: 编译成功后，会在 `Action` 上传 AnyKernel3 等一系列内容，已经关闭设备检查，请确保手机已经解锁后再刷入！
 
@@ -26,7 +29,7 @@
 
 > Star 是作者的动力来源，请不要吝啬你的 Star！
 
-- 将配置文件改名为config.env（名称可以自定义，但**必须**以 `.env` 结尾 ！）
+- 将配置文件改名为 `config.properties`（名称可以自定义，只要是纯文本文件即可）
 
 - 在配置文件中编写你喜欢的配置，配置文件的注释可以在本README.md的下半部分找到。
 
@@ -51,7 +54,7 @@
 
 将 **`config.env.simple`** 改为你的配置文件名称；
 
-如果你创建了一个叫 **`config_abcdefg.env`** 的配置文件，那你就应该在这里填写 **`config_abcdefg.env`**。
+如果你创建了一个叫 **`config_abcdefg.envaaa`** 的配置文件，那你就应该在这里填写 **`config_abcdefg.envaaa`**。
 
 - 之后进入 Actions，点击绿色按钮`I understand my workflows, go ahead and enable them.` 点击选项（默认为 `Build` ）会看见右边的大对话框的上面会有`Run workflows`，点击它会启动构建。若勾选 Release，则会发布 Release。
 
@@ -292,6 +295,12 @@ windows-x86_32
 
 如果使用自定义 Gcc 64，则可自定义第三方 Gcc 的分支，例如 `main`
 
+#### Custom Gcc 64 Bin
+
+（字符串）
+
+可自定义 Gcc 64 的执行文件名称，AOSP Gcc 为 `aarch64-linux-android-`
+
 #### Use Custom Gcc 32
 
 （ true 或 false ）
@@ -313,6 +322,12 @@ windows-x86_32
 （字符串）
 
 如果使用自定义 Gcc 32，则可自定义第三方 Gcc 的分支，例如 `main`
+
+#### Custom Gcc 32 Bin
+
+（字符串）
+
+可自定义 Gcc 32 的执行文件名称，AOSP Gcc 为 `arm-linux-androideabi-`
 
 
 ### **Enable KernelSU**
@@ -402,6 +417,12 @@ Magisk 所修补的分区名称
 Magisk 所修补的分区的镜像文件，需要直链。
 
 例如：https://raw.githubusercontent.com/abc/def/main/boot/boot.img
+
+#### Mix KernelSU Magisk boot Image
+
+（ true 或 false ）
+
+将 KernelSU 和 Magisk 混合到一个镜像里
 
 ### **Build Settings**
 
@@ -515,9 +536,9 @@ ARCH=arm64
 
 ENABLE_CLANG=true
 USE_AOSP_CLANG=false
-AOSP_CLANG_SYSTEM=linux-x86
-AOSP_CLANG_BRANCH=master
-AOSP_CLANG_VERSION=r450784e
+AOSP_CLANG_SYSTEM=
+AOSP_CLANG_BRANCH=
+AOSP_CLANG_VERSION=
 USE_CUSTOM_CLANG=true
 CUSTOM_CLANG_SOURCE=https://gitlab.com/Panchajanya1999/azure-clang.git
 CUSTOM_CLANG_BRANCH=main
@@ -525,17 +546,19 @@ CUSTOM_CLANG_BRANCH=main
 ENABLE_GCC=true
 ENABLE_AOSP_GCC_ARM64=false
 ENABLE_AOSP_GCC_ARM32=false
-AOSP_GCC_SYSTEM=linux-x86
-AOSP_GCC_ARM64_VERSION=aarch64-linux-android-4.9
-AOSP_GCC_ARM32_VERSION=arm-linux-androideabi-4.9
-AOSP_GCC_ANDROID_VERSION=12.1.0
-AOSP_GCC_RELEASE=r27
+AOSP_GCC_SYSTEM=
+AOSP_GCC_ARM64_VERSION=
+AOSP_GCC_ARM32_VERSION=
+AOSP_GCC_ANDROID_VERSION=
+AOSP_GCC_RELEASE=
 USE_CUSTOM_GCC_64=true
 CUSTOM_GCC_64_SOURCE=https://github.com/magojohnji/gcc-arm64.git
 CUSTOM_GCC_64_BRANCH=gcc-master
+CUSTOM_GCC_64_BIN=aarch64-linux-android-
 USE_CUSTOM_GCC_32=true
 CUSTOM_GCC_32_SOURCE=https://github.com/magojohnji/gcc-arm32.git
 CUSTOM_GCC_32_BRANCH=master
+CUSTOM_GCC_32_BIN=arm-linux-androideabi-
 
 ENABLE_KERNELSU=true
 KERNELSU_INSTALLER=https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
@@ -549,6 +572,8 @@ ENABLE_MAGISK=true
 MAGISK_APK=https://cdn.jsdelivr.net/gh/magojohnji/magisk-file-host@master/delta/apk/canary.apk
 MAGISK_PATCH_PARTITION=boot
 MAGISK_SOURCE_BOOT_IMAGE=https://raw.githubusercontent.com/magojohnji/bin/main/boot_PE13_violet.img
+
+MIX_KERNELSU_MAGISK_BOOT_IMAGE=true
 
 DISABLE-LTO=false
 DISABLE_CC_WERROR=false
