@@ -1,6 +1,6 @@
 [Chinese (Simplified)](README_ZH-HANS.md) | **English**
 
-# Add KernelSU and Magisk Action
+# KernelSU_Action
 
 ## :warning: :warning: :warning: **Read README frist !!!!!**
 

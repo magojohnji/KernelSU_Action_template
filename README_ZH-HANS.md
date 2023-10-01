@@ -1,6 +1,6 @@
 **中文（简体）** | [English](README.md)
 
-# Add KernelSU and Magisk Action
+# KernelSU_Action
 
 ## :warning: :warning: :warning: **先阅读 README！！！**
 
