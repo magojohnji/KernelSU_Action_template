@@ -10,24 +10,24 @@
 
 :warning: **本项目的本质是简化配置编译环境等步骤（所有类似的仓库都是如此），内核编译的各项参数仍需你自己寻找，否则编译将失败！**
 
-**本仓库真实有效，如需查看编译实例可去查看叫 MAKSU 的[编译仓库](https://github.com/magojohnji/MAKSU/actions)。**
-
 ## ***支持的内核版本***
 
+- *`5.15`*
 - *`5.10`*
 - *`5.4`*
 - *`4.19`*
 - *`4.14`*
 - *`4.9`*
-- ***其他版本可能支持，但是你必须自行测试！***
+- *`4.4`*
+- *其他版本* ***可能*** *支持，但是你必须自行测试！*
 
 ## **使用**
 
-> :warning: :warning: :warning: 编译成功后，会在 `Action` 上传 AnyKernel3 等一系列内容，已经关闭设备检查，请确保手机已经解锁后再刷入！
+:warning: :warning: :warning: `编译成功后，会在 `Action` 上传 AnyKernel3 等一系列内容，已经关闭设备检查，请确保手机已经解锁后再刷入！`
 
-- Star 本仓库，然后 Fork 本仓库，以确保工作流运行正常。
+- Star 本仓库，然后点击 “Use this template”,按照你想要的方式创建仓库
 
-> Star 是作者的动力来源，请不要吝啬你的 Star！
+`Star 是作者的动力来源，请不要吝啬你的 Star！`
 
 - 将配置文件改名为 `config.properties`（名称可以自定义，只要是纯文本文件即可）
 
@@ -44,7 +44,7 @@
       run: |
 
 
-->>>>>>> CONFIG_ENV=config.env.simple <<<<<<<-
+->>>>>>> CONFIG_ENV=config.properties.example <<<<<<<-
 
 
         echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -52,7 +52,7 @@
         echo "KERNEL_CONFIG=$(cat $CONFIG_ENV | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
 ```
 
-将 **`config.env.simple`** 改为你的配置文件名称；
+将 **`config.properties.example`** 改为你的配置文件名称；
 
 如果你创建了一个叫 **`config_abcdefg.envaaa`** 的配置文件，那你就应该在这里填写 **`config_abcdefg.envaaa`**。
 
@@ -386,46 +386,6 @@ MlgmXyysd修改版：https://raw.githubusercontent.com/MlgmXyysd/KernelSU_Debug/
 
 例如: https://raw.githubusercontent.com/abc/def/main/boot/boot.img
 
-### **Enable Magisk**
-
-（ true 或 false ）
-
-顾名思义，配置是否启用 Magisk
-
-#### Magisk APK
-
-（HTTP链接）
-
-故名思义，提供一个 Magisk APK 文件（ZIP也可以，理论上只要是ZIP格式的文件就可以了），需要直链，支持第三方、自定义版本的 Magisk。
-
-如果找不到官方仓库，可以去 [magisk-files-host](https://github.com/magojohnji/magisk-files-host) 找APK文件，
-
-> Tips：拆json找链接也可以。
-
-#### Magisk Patch Partition
-
-（字符串）
-
-Magisk 所修补的分区名称
-
-一般来说，是boot分区，但不排除部分设备是 init_boot 或 vendor_boot 的可能性，详见 Magisk 官方文档。
-
-#### Magisk Source Boot Image
-
-（HTTP链接）
-
-Magisk 所修补的分区的镜像文件，需要直链。
-
-例如：https://raw.githubusercontent.com/abc/def/main/boot/boot.img
-
-#### Mix KernelSU Magisk boot Image
-
-（ true 或 false ）
-
-将 KernelSU 和 Magisk 混合到一个镜像里
-
-### **Build Settings**
-
 ---
 
 #### Disable LTO
@@ -525,7 +485,63 @@ on:
   <summary><h3>config.properties实例<h3></summary>
 
 ## 文件
-> 这个文件适用于编译 violet (Redmi Note 7 Pro) 的带有 KernelSU 的内核
+这个文件适用于编译 RMX1971 Kernel 4.9 (Realme Q) 的带有 KernelSU 的内核：
+
+```properties
+KERNEL_SOURCE=https://gitlab.com/kssrao13882/kernel_realme_sdm710.git
+KERNEL_SOURCE_BRANCH=13
+KERNEL_CONFIG=KharaMe_defconfig
+KERNEL_IMAGE_NAME=Image.gz
+ARCH=arm64
+
+ENABLE_CLANG=true
+USE_AOSP_CLANG=false
+AOSP_CLANG_SYSTEM=
+AOSP_CLANG_BRANCH=
+AOSP_CLANG_VERSION=
+USE_CUSTOM_CLANG=true
+CUSTOM_CLANG_SOURCE=https://github.com/kdrag0n/proton-clang.git
+CUSTOM_CLANG_BRANCH=master
+
+ENABLE_GCC=true
+ENABLE_AOSP_GCC_ARM64=true
+ENABLE_AOSP_GCC_ARM32=true
+AOSP_GCC_SYSTEM=linux-x86
+AOSP_GCC_ARM64_VERSION=aarch64-linux-android-4.9
+AOSP_GCC_ARM32_VERSION=arm-linux-androideabi-4.9
+AOSP_GCC_ANDROID_VERSION=12.1.0
+AOSP_GCC_RELEASE=r27
+USE_CUSTOM_GCC_64=false
+CUSTOM_GCC_64_SOURCE=
+CUSTOM_GCC_64_BRANCH=
+CUSTOM_GCC_64_BIN=aarch64-linux-android-
+USE_CUSTOM_GCC_32=false
+CUSTOM_GCC_32_SOURCE=
+CUSTOM_GCC_32_BRANCH=
+CUSTOM_GCC_32_BIN=arm-linux-androideabi-
+
+ENABLE_KERNELSU=true
+KERNELSU_INSTALLER=https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
+KERNELSU_TAG=main
+KSU_EXPECTED_SIZE=
+KSU_EXPECTED_HASH=
+BUILD_KERNELSU_BOOT_IMG=true
+KERNELSU_SOURCE_BOOT_IMAGE=https://raw.githubusercontent.com/magojohnji/MAKSU/main/boot/boot_PE13_rmx1971.img
+
+DISABLE-LTO=false
+DISABLE_CC_WERROR=false
+ADD_KPROBES_CONFIG=true
+ADD_OVERLAYFS_CONFIG=true
+ENABLE_CCACHE=true
+NEED_DTBO=false
+BUILDER_HOST=Github-Action
+
+TC_CUSTOM_CMDS:CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-androidkernel-
+EXTRA_CMDS:
+
+```
+
+这个文件适用于编译 violet Kernel 4.14 (Redmi Note 7 Pro) 的带有 KernelSU 的内核：
 
 ```properties
 KERNEL_SOURCE=https://github.com/magojohnji/msm-4.14.git
@@ -568,13 +584,6 @@ KSU_EXPECTED_HASH=
 BUILD_KERNELSU_BOOT_IMG=true
 KERNELSU_SOURCE_BOOT_IMAGE=https://raw.githubusercontent.com/magojohnji/bin/main/boot_PE13_violet.img
 
-ENABLE_MAGISK=true
-MAGISK_APK=https://cdn.jsdelivr.net/gh/magojohnji/magisk-file-host@master/delta/apk/canary.apk
-MAGISK_PATCH_PARTITION=boot
-MAGISK_SOURCE_BOOT_IMAGE=https://raw.githubusercontent.com/magojohnji/bin/main/boot_PE13_violet.img
-
-MIX_KERNELSU_MAGISK_BOOT_IMAGE=true
-
 DISABLE-LTO=false
 DISABLE_CC_WERROR=false
 ADD_KPROBES_CONFIG=true
@@ -585,6 +594,64 @@ BUILDER_HOST=Github-Action
 
 TC_CUSTOM_CMDS:CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi-
 EXTRA_CMDS:AR=llvm-ar OBJDUMP=llvm-objdump STRIP=llvm-strip NM=llvm-nm OBJCOPY=llvm-objcopy LD=ld.lld
+
+```
+
+这个文件适用于编译 munch Kernel 4.19 (Redmi K40S) 的带有 KernelSU 的内核：
+
+```properties
+KERNEL_SOURCE=https://github.com/magojohnji/Realking_kernel_sm8250.git
+KERNEL_SOURCE_BRANCH=base
+KERNEL_CONFIG=munch_defconfig
+KERNEL_IMAGE_NAME=Image.gz
+ARCH=arm64
+
+ENABLE_CLANG=true
+USE_AOSP_CLANG=false
+AOSP_CLANG_SYSTEM=
+AOSP_CLANG_BRANCH=
+AOSP_CLANG_VERSION=
+USE_CUSTOM_CLANG=true
+CUSTOM_CLANG_SOURCE=https://github.com/ZyCromerZ/Clang/releases/download/18.0.0-20230901-release/Clang-18.0.0-20230901.tar.gz
+CUSTOM_CLANG_BRANCH=
+
+ENABLE_GCC=false
+ENABLE_AOSP_GCC_ARM64=false
+ENABLE_AOSP_GCC_ARM32=false
+AOSP_GCC_SYSTEM=
+AOSP_GCC_ARM64_VERSION=
+AOSP_GCC_ARM32_VERSION=
+AOSP_GCC_ANDROID_VERSION=
+AOSP_GCC_RELEASE=
+USE_CUSTOM_GCC_64=false
+CUSTOM_GCC_64_SOURCE=
+CUSTOM_GCC_64_BRANCH=
+CUSTOM_GCC_64_BIN=aarch64-linux-android-
+USE_CUSTOM_GCC_32=false
+CUSTOM_GCC_32_SOURCE=
+CUSTOM_GCC_32_BRANCH=
+CUSTOM_GCC_32_BIN=arm-linux-androideabi-
+
+ENABLE_KERNELSU=true
+KERNELSU_INSTALLER=https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
+KERNELSU_TAG=main
+KSU_EXPECTED_SIZE=
+KSU_EXPECTED_HASH=
+BUILD_KERNELSU_BOOT_IMG=false
+KERNELSU_SOURCE_BOOT_IMAGE=
+
+MIX_KERNELSU_MAGISK_BOOT_IMAGE=false
+
+DISABLE-LTO=false
+DISABLE_CC_WERROR=false
+ADD_KPROBES_CONFIG=true
+ADD_OVERLAYFS_CONFIG=true
+ENABLE_CCACHE=true
+NEED_DTBO=true
+BUILDER_HOST=Github-Action
+
+TC_CUSTOM_CMDS:CROSS_COMPILE=aarch64-linux-gnu-
+EXTRA_CMDS:NM=llvm-nm OBJDUMP=llvm-objdump STRIP=llvm-strip
 
 ```
 

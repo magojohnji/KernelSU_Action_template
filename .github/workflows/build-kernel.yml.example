@@ -1,5 +1,7 @@
 name: Build example
 on:
+  push:
+  pull_request:
   workflow_dispatch:
     inputs:
       release:
@@ -25,7 +27,7 @@ jobs:
 
     - name: Read the configuration
       run: |
-        CONFIG_ENV=config.properties.simple
+        CONFIG_ENV=config.properties.example
         echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNEL_SOURCE_BRANCH=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNEL_CONFIG=$(cat $CONFIG_ENV | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -60,11 +62,6 @@ jobs:
         echo "KSU_EXPECTED_HASH=$(cat $CONFIG_ENV | grep -w "KSU_EXPECTED_HASH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "BUILD_KERNELSU_BOOT_IMG=$(cat $CONFIG_ENV | grep -w "BUILD_KERNELSU_BOOT_IMG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNELSU_SOURCE_BOOT_IMAGE=$(cat $CONFIG_ENV | grep -w "KERNELSU_SOURCE_BOOT_IMAGE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "ENABLE_MAGISK=$(cat $CONFIG_ENV | grep -w "ENABLE_MAGISK" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "MAGISK_APK=$(cat $CONFIG_ENV | grep -w "MAGISK_APK" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "MAGISK_PATCH_PARTITION=$(cat $CONFIG_ENV | grep -w "MAGISK_PATCH_PARTITION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "MAGISK_SOURCE_BOOT_IMAGE=$(cat $CONFIG_ENV | grep -w "MAGISK_SOURCE_BOOT_IMAGE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "MIX_KERNELSU_MAGISK_BOOT_IMAGE=$(cat $CONFIG_ENV | grep -w "MIX_KERNELSU_MAGISK_BOOT_IMAGE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "DISABLE-LTO=$(cat $CONFIG_ENV | grep -w "DISABLE-LTO" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "DISABLE_CC_WERROR=$(cat $CONFIG_ENV | grep -w "DISABLE_CC_WERROR" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "ADD_KPROBES_CONFIG=$(cat $CONFIG_ENV | grep -w "ADD_KPROBES_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -353,53 +350,9 @@ jobs:
         if [ -f boot-kernelsu.img ]; then
             echo "MAKE_KERNELSU_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
         else
-            echo "KernelSU Boot image is empty or broken."
+            echo "KernelSU Boot image is broken."
             exit 1
         fi
-    
-    - name: Setting up Magisk boot image
-      if: env.ENABLE_MAGISK == 'true'
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace
-        mkdir magisk-patch
-        cd magisk-patch
-        mkdir magisk
-        cd magisk
-        wget "${{ env.MAGISK_SOURCE_BOOT_IMAGE }}" -O ${{ env.MAGISK_PATCH_PARTITION }}.img
-        wget "${{ env.MAGISK_APK }}" -O Magisk.zip
-        unzip Magisk.zip >> /dev/null
-        cd ./lib/x86_64
-        rename 's/(lib|\.so)//g' *
-        cd ../../
-        mv ./lib/x86_64/* ./assets
-        chmod -R a+x ./assets/*
-        cd assets
-        bash ./boot_patch.sh ../${{ env.MAGISK_PATCH_PARTITION }}.img
-        mv ./new-boot.img $GITHUB_WORKSPACE/kernel_workspace/magisk-patch/boot-magisk.img
-        echo "MAKE_MAGISK_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
-
-
-    - name: Mixing KernelSU and Magisk boot image
-      if: env.MAKE_KERNELSU_BOOT_IMAGE_IS_OK == 'true' && env.ENABLE_MAGISK == 'true'
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace
-        mkdir magisk-patch-kernelsu
-        cd magisk-patch-kernelsu
-        mkdir magisk
-        cd magisk
-        cp $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img ./${{ env.MAGISK_PATCH_PARTITION }}.img
-        wget "${{ env.MAGISK_APK }}" -O Magisk.zip
-        unzip Magisk.zip >> /dev/null
-        cd ./lib/x86_64
-        rename 's/(lib|\.so)//g' *
-        cd ../../
-        mv ./lib/x86_64/* ./assets
-        chmod -R a+x ./assets/*
-        cd assets
-        bash ./boot_patch.sh ../${{ env.MAGISK_PATCH_PARTITION }}.img
-        mv ./new-boot.img $GITHUB_WORKSPACE/kernel_workspace/magisk-patch-kernelsu/boot-kernelsu-magisk.img
-        echo "MAKE_KERNELSU_MAGISK_BOOT_IMAGE_IS_OK=true" >> $GITHUB_ENV
-
 
     - name: Upload ${{ env.KERNEL_IMAGE_NAME }}
       if: env.CHECK_FILE_IS_OK == 'true'
@@ -432,30 +385,6 @@ jobs:
         name: boot${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
         path: kernel_workspace/bootimg_tmp/boot-kernelsu.img
         if-no-files-found: error
-    
-    - name: Upload Magisk boot image
-      if: env.ENABLE_MAGISK == 'true' && env.MAKE_MAGISK_BOOT_IMAGE_IS_OK == 'true'
-      uses: actions/upload-artifact@v3
-      with:
-        name: boot-Magisk-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
-        path: kernel_workspace/magisk-patch/boot-magisk.img
-        if-no-files-found: error
-    
-    - name: Upload Magisk zip
-      if: env.ENABLE_MAGISK == 'true'
-      uses: actions/upload-artifact@v3
-      with:
-        name: Magisk-APK-Installer-${{ env.BUILD_TIME }}
-        path: kernel_workspace/magisk-patch/magisk/Magisk.zip
-        if-no-files-found: error
-
-    - name: Upload KernelSU and Magisk mixed boot image
-      if: env.MAKE_KERNELSU_MAGISK_BOOT_IMAGE_IS_OK == 'true'
-      uses: actions/upload-artifact@v3
-      with:
-        name: boot-KernelSU-Magisk-${{ env.BUILD_TIME }}
-        path: kernel_workspace/magisk-patch-kernelsu/boot-kernelsu-magisk.img
-        if-no-files-found: error
 
     - name: Release
       uses: softprops/action-gh-release@master
@@ -469,8 +398,5 @@ jobs:
           kernel_workspace/AnyKernel3/AnyKernel3.zip
           kernel_workspace/android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img
           kernel_workspace/bootimg_tmp/boot-kernelsu.img
-          kernel_workspace/magisk-patch/boot-magisk.img
-          kernel_workspace/magisk-patch-kernelsu/boot-kernelsu-magisk.img
-          kernel_workspace/magisk-patch/magisk/Magisk.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

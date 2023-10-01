@@ -10,24 +10,24 @@ The Actions to compile the Non-GKI kernel, with the optional addition of Magisk 
 
 :warning: **The essence of this project is to simplify the configuration of the compilation environment and other steps (all similar repositories are), the kernel compilation of the parameters still need to find your own, otherwise the compilation will fail!**
 
-**This repository is real, so if you want to see examples of builds, check out [the build repository](https://github.com/magojohnji/MAKSU/actions) named MAKSU.**
-
 ## ***Supported Kernels***
 
+- *`5.15`*
 - *`5.10`*
 - *`5.4`*
 - *`4.19`*
 - *`4.14`*
 - *`4.9`*
-- ***The other versions** ***may*** **be supported, but you need to try it for yourself!***
+- *`4.4`*
+- *The other versions* ***may*** *be supported, but you need to try it for yourself!*
 
 ## **Usage**
 
-> :warning: :warning: :warning: After compilation, AnyKernel3 will be uploaded in `Action` and so on, device checking has been turned off, please make sure your phone is unlocked before flashing it!
+:warning: :warning: :warning: `After compilation, AnyKernel3 will be uploaded in `Action` and so on, device checking has been turned off, please make sure your phone is unlocked before flashing it!`
 
-- Star this repository, then Fork this repository to make sure the workflow is running properly.
+- Star this repository and click "Use this template" to create the repository the way you want it.
 
-> Star is a source of motivation for authors, so please don't skimp on your Star!
+`Star is a source of motivation for authors, so please don't skimp on your Star!`
 
 - Rename the configuration file to `config.properties` (the name can be customized, as long as it is a plain text file)
 
@@ -45,7 +45,7 @@ The Actions to compile the Non-GKI kernel, with the optional addition of Magisk 
       run: |
 
 
-->>>>>>> CONFIG_ENV=config.env.simple <<<<<<<-
+->>>>>>> CONFIG_ENV=config.properties.example <<<<<<<-
 
 
         echo "KERNEL_SOURCE=$(cat $CONFIG_ENV | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -53,7 +53,7 @@ The Actions to compile the Non-GKI kernel, with the optional addition of Magisk 
         echo "KERNEL_CONFIG=$(cat $CONFIG_ENV | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
 ```
 
-- Change **`config.env.simple`** to the name of your configuration file. If you created a config file called **`config_abcdefg.envaaa`** then you should fill in **`config_abcdefg.envaaa`** here.
+- Change **`config.properties.example`** to the name of your configuration file. If you created a config file called **`config_abcdefg.envaaa`** then you should fill in **`config_abcdefg.envaaa`** here.
 
 - After that go to Actions and click on the green button `I understand my workflows, go ahead and enable them.` Click on Options (default is **`Build`**) and you'll see **`Run workflows`** at the top of the big dialog on the right, clicking on that will start the build. If **`Release`** is checked, it will release the build.
 
@@ -387,44 +387,6 @@ As the name suggests, you need to provide a boot image of the source system that
 
 Example: https://raw.githubusercontent.com/abc/def/main/boot/boot.img
 
-### **Enable Magisk**
-
-(true or false)
-
-As the name suggests, you can configure whether to enable Magisk or not.
-
-#### Magisk APK
-
-(HTTP link)
-
-As the name suggests, provide a Magisk APK file (ZIP is fine, theoretically as long as it's in ZIP format), which needs to be directly linked, and supports third-party, customized versions of Magisk.
-
-If you can't find the official repository, you can go to [magisk-files-host](https://github.com/magojohnji/magisk-files-host) to find the APK file.
-
-> Tips: split the json to find the link is also possible.
-
-#### Magisk Patch Partition
-
-(string)
-
-The name of the partition that Magisk patched
-
-Generally, it is the boot partition, but we can't rule out the possibility that some devices are init_boot or vendor_boot, see Magisk official documentation for details.
-
-#### Magisk Source Boot Image
-
-(HTTP link)
-
-Image file of the partition patched by Magisk, requires a direct link.
-
-Example: https://raw.githubusercontent.com/abc/def/main/boot/boot.img
-
-#### Mix KernelSU Magisk Boot Image
-
-(true or false)
-
-Mix KernelSU and Magisk into one image.
-
 ### **Build Settings**
 
 ---
@@ -525,7 +487,63 @@ Of course you can mix them up :-)
   <summary><h3>config.properties instance<h3></summary>
 
 ## File
-> This file is for compiling violet's (Redmi Note 7 Pro) kernel with KernelSU
+This file is for compiling RMX1971 Kernel 4.9 (Realme Q) with KernelSU:
+
+```properties
+KERNEL_SOURCE=https://gitlab.com/kssrao13882/kernel_realme_sdm710.git
+KERNEL_SOURCE_BRANCH=13
+KERNEL_CONFIG=KharaMe_defconfig
+KERNEL_IMAGE_NAME=Image.gz
+ARCH=arm64
+
+ENABLE_CLANG=true
+USE_AOSP_CLANG=false
+AOSP_CLANG_SYSTEM=
+AOSP_CLANG_BRANCH=
+AOSP_CLANG_VERSION=
+USE_CUSTOM_CLANG=true
+CUSTOM_CLANG_SOURCE=https://github.com/kdrag0n/proton-clang.git
+CUSTOM_CLANG_BRANCH=master
+
+ENABLE_GCC=true
+ENABLE_AOSP_GCC_ARM64=true
+ENABLE_AOSP_GCC_ARM32=true
+AOSP_GCC_SYSTEM=linux-x86
+AOSP_GCC_ARM64_VERSION=aarch64-linux-android-4.9
+AOSP_GCC_ARM32_VERSION=arm-linux-androideabi-4.9
+AOSP_GCC_ANDROID_VERSION=12.1.0
+AOSP_GCC_RELEASE=r27
+USE_CUSTOM_GCC_64=false
+CUSTOM_GCC_64_SOURCE=
+CUSTOM_GCC_64_BRANCH=
+CUSTOM_GCC_64_BIN=aarch64-linux-android-
+USE_CUSTOM_GCC_32=false
+CUSTOM_GCC_32_SOURCE=
+CUSTOM_GCC_32_BRANCH=
+CUSTOM_GCC_32_BIN=arm-linux-androideabi-
+
+ENABLE_KERNELSU=true
+KERNELSU_INSTALLER=https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
+KERNELSU_TAG=main
+KSU_EXPECTED_SIZE=
+KSU_EXPECTED_HASH=
+BUILD_KERNELSU_BOOT_IMG=true
+KERNELSU_SOURCE_BOOT_IMAGE=https://raw.githubusercontent.com/magojohnji/MAKSU/main/boot/boot_PE13_rmx1971.img
+
+DISABLE-LTO=false
+DISABLE_CC_WERROR=false
+ADD_KPROBES_CONFIG=true
+ADD_OVERLAYFS_CONFIG=true
+ENABLE_CCACHE=true
+NEED_DTBO=false
+BUILDER_HOST=Github-Action
+
+TC_CUSTOM_CMDS:CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-androidkernel-
+EXTRA_CMDS:
+
+```
+
+This file is for compiling violet Kernel 4.14 (Redmi Note 7 Pro) with KernelSU:
 
 ```properties
 KERNEL_SOURCE=https://github.com/magojohnji/msm-4.14.git
@@ -568,13 +586,6 @@ KSU_EXPECTED_HASH=
 BUILD_KERNELSU_BOOT_IMG=true
 KERNELSU_SOURCE_BOOT_IMAGE=https://raw.githubusercontent.com/magojohnji/bin/main/boot_PE13_violet.img
 
-ENABLE_MAGISK=true
-MAGISK_APK=https://cdn.jsdelivr.net/gh/magojohnji/magisk-file-host@master/delta/apk/canary.apk
-MAGISK_PATCH_PARTITION=boot
-MAGISK_SOURCE_BOOT_IMAGE=https://raw.githubusercontent.com/magojohnji/bin/main/boot_PE13_violet.img
-
-MIX_KERNELSU_MAGISK_BOOT_IMAGE=true
-
 DISABLE-LTO=false
 DISABLE_CC_WERROR=false
 ADD_KPROBES_CONFIG=true
@@ -587,7 +598,63 @@ TC_CUSTOM_CMDS:CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gn
 EXTRA_CMDS:AR=llvm-ar OBJDUMP=llvm-objdump STRIP=llvm-strip NM=llvm-nm OBJCOPY=llvm-objcopy LD=ld.lld
 
 ```
+This file is for compiling munch Kernel 4.19 (Redmi K40S) with KernelSU:
 
+```properties
+KERNEL_SOURCE=https://github.com/magojohnji/Realking_kernel_sm8250.git
+KERNEL_SOURCE_BRANCH=base
+KERNEL_CONFIG=munch_defconfig
+KERNEL_IMAGE_NAME=Image.gz
+ARCH=arm64
+
+ENABLE_CLANG=true
+USE_AOSP_CLANG=false
+AOSP_CLANG_SYSTEM=
+AOSP_CLANG_BRANCH=
+AOSP_CLANG_VERSION=
+USE_CUSTOM_CLANG=true
+CUSTOM_CLANG_SOURCE=https://github.com/ZyCromerZ/Clang/releases/download/18.0.0-20230901-release/Clang-18.0.0-20230901.tar.gz
+CUSTOM_CLANG_BRANCH=
+
+ENABLE_GCC=false
+ENABLE_AOSP_GCC_ARM64=false
+ENABLE_AOSP_GCC_ARM32=false
+AOSP_GCC_SYSTEM=
+AOSP_GCC_ARM64_VERSION=
+AOSP_GCC_ARM32_VERSION=
+AOSP_GCC_ANDROID_VERSION=
+AOSP_GCC_RELEASE=
+USE_CUSTOM_GCC_64=false
+CUSTOM_GCC_64_SOURCE=
+CUSTOM_GCC_64_BRANCH=
+CUSTOM_GCC_64_BIN=aarch64-linux-android-
+USE_CUSTOM_GCC_32=false
+CUSTOM_GCC_32_SOURCE=
+CUSTOM_GCC_32_BRANCH=
+CUSTOM_GCC_32_BIN=arm-linux-androideabi-
+
+ENABLE_KERNELSU=true
+KERNELSU_INSTALLER=https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh
+KERNELSU_TAG=main
+KSU_EXPECTED_SIZE=
+KSU_EXPECTED_HASH=
+BUILD_KERNELSU_BOOT_IMG=false
+KERNELSU_SOURCE_BOOT_IMAGE=
+
+MIX_KERNELSU_MAGISK_BOOT_IMAGE=false
+
+DISABLE-LTO=false
+DISABLE_CC_WERROR=false
+ADD_KPROBES_CONFIG=true
+ADD_OVERLAYFS_CONFIG=true
+ENABLE_CCACHE=true
+NEED_DTBO=true
+BUILDER_HOST=Github-Action
+
+TC_CUSTOM_CMDS:CROSS_COMPILE=aarch64-linux-gnu-
+EXTRA_CMDS:NM=llvm-nm OBJDUMP=llvm-objdump STRIP=llvm-strip
+
+```
 </details>
 
 ## ***Other***
