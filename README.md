@@ -659,7 +659,7 @@ EXTRA_CMDS:NM=llvm-nm OBJDUMP=llvm-objdump STRIP=llvm-strip
 
 ## ***Other***
 
-If you find something that doesn’t work, or you need to add or modify functions, please raise **[Issue](https://github.com/magojohnji/Add_KernelSU-Magisk_Action/issues)** to let me know!
+If you find something that doesn’t work, or you need to add or modify functions, please raise **[Issue](https://github.com/magojohnji/KernelSU_Action_template/issues)** to let me know!
 
 ## ***Grateful***
 
