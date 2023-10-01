@@ -10,7 +10,7 @@ The Actions to compile the Non-GKI kernel, with the optional addition of Magisk 
 
 :warning: **The essence of this project is to simplify the configuration of the compilation environment and other steps (all similar repositories are), the kernel compilation of the parameters still need to find your own, otherwise the compilation will fail!**
 
-## ***Supported Kernels***
+## ***Tested Kernels***
 
 - *`5.15`*
 - *`5.10`*
